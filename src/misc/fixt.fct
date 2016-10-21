@@ -1,0 +1,11 @@
+
+Fdist  "!fun1:(*->**)->(*->**). !fun2:(***->****)->(***->****). FIX(\f':(*->**)#(***->****).fun1(FST f'), fun2(S~
+ND f')) == FIX fun1 :*->**, FIX fun2 :***->****"
+
+Flfp  "!F:*->*. !x:*. F x == x IMP FIX F << x"
+
+Fpthm1  "!t:*. !u:**. !t':*. !u':**. t, u == t', u' IMP t == t' & u == u'"
+
+Fbasic  "!F:(*->**)->(*->**). !f:*->**. f == FIX F :*->** IMP F f == f"
+
+Fdist1  "!fun1:*->*. !fun2:**->**. FIX(\f':*#**.fun1(FST f'), fun2(SND f')) == FIX fun1 :*, FIX fun2 :**"

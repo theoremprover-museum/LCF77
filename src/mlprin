@@ -1,0 +1,94 @@
+
+
+(DEFPROP PP
+ (LAMBDA(%EX %PPDEPTH)
+  (COND	((ATOM %EX) (PRINC %EX))
+	(T (PPRINT %EX (LOOKUP (CAR %EX)) %PPDEPTH))))
+EXPR)
+
+(DEFPROP PPRINT
+ (LAMBDA(%EX F %PPDEPTH)
+  (PROG	(X)
+	(COND ((ZEROP %PPDEPTH) (RETURN (PRINC PPSYM))))
+   LOOP	(COND ((NULL F) (RETURN NIL)))
+	(SETQ X (CAR F))
+	(COND ((NUMBERP X) (PP (GETNTH X (CDR %EX)) (SUB1 %PPDEPTH)))
+	      ((ATOM X) (PRINC X))
+	      (T
+	       ((LAMBDA (%PP %PPL) (EVAL X))
+		(FUNCTION (LAMBDA (EX) (PP EX %PPDEPTH)))
+		(FUNCTION
+		 (LAMBDA(L OPEN SEP CLOSE)
+		  (PPL L %PPDEPTH OPEN SEP CLOSE))))))
+	(SETQ F (CDR F))
+	(GO LOOP)))
+EXPR)
+
+(DEFPROP PPL
+ (LAMBDA(L %PPDEPTH OPEN SEP CLOSE)
+  (PROG	(XL)
+	(SETQ XL L)
+	(PRINC OPEN)
+	(COND ((NULL XL) (GO END)))
+   LOOP	(PP (CAR XL) %PPDEPTH)
+	(SETQ XL (CDR XL))
+	(COND ((NULL XL) (GO END)) (T (PRINC SEP) (GO LOOP)))
+   END	(PRINC CLOSE)))
+EXPR)
+
+(DEFPROP LOOKUP
+
+ (LAMBDA(MKX)
+  (PROG	(PT)
+	(SETQ PT PRINTTABLE)
+   LOOP	(COND ((NULL PT) (SYSTEMERROR))
+	      ((EQ MKX (CAAR PT)) (RETURN (CDAR PT)))
+	      (T (SETQ PT (CDR PT)) (GO LOOP)))))
+EXPR)
+
+(DEFPROP GETNTH
+ (LAMBDA(N L)
+  (COND	((OR (ZEROP N) (NULL L)) (SYSTEMERROR))
+	((EQ N 1) (CAR L))
+	(T (GETNTH (SUB1 N) (CDR L)))))
+EXPR)
+
+(DEFPROP TESTTRAPFN
+ (LAMBDA(ISTEST F)
+  (PROG	(XL X)
+	(SETQ XL (CAR F))
+   L1	(COND
+	 ((NULL XL)
+	  (COND	((NULL (CDR F)) (RETURN NIL))
+		(T (SETQ X (CADR F)) (GO L2)))))
+	(SETQ X (CAR XL))
+	(PRINC
+	 (COND (ISTEST (QUOTE "if "))
+	       (T
+		(COND ((EQ (CAR X) (QUOTE ONCE)) TP3SYM)
+		      (T TP4SYM)))))
+	(PP (CADR X) %PPDEPTH)
+	(COND (ISTEST
+	       (PRINC
+		(COND ((EQ (CAR X) (QUOTE ONCE)) (QUOTE " then "))
+		      (T (QUOTE " loop ")))))
+	      (T (PRINC (QUOTE / ))))
+	(PP (CDDR X) %PPDEPTH)
+	(SETQ XL (CDR XL))
+	(GO L1)
+   L2	(COND (ISTEST
+	       (PRINC
+		(COND ((EQ (CAR X) (QUOTE ONCE)) (QUOTE " else "))
+		      (T (QUOTE " loop ")))))
+	      (T
+	       (COND ((ATOM (CAR X))
+		      (PRINC
+		       (COND ((EQ (CAR X) (QUOTE ONCE)) TP1SYM)
+			     (T TP2SYM))))
+		     (T	(PRINC
+			 (COND ((EQ (CAAR X) (QUOTE ONCE)) TP5SYM)
+			       (T TP6SYM)))
+			(PRINC (CDAR X))
+			(PRINC (QUOTE / ))))))
+	(PP (CDR X) %PPDEPTH)))
+EXPR)

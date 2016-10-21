@@ -1,0 +1,238 @@
+COMMENT ⊗   VALID 00006 PAGES
+C REC  PAGE   DESCRIPTION
+C00001 00001
+C00002 00002	% LESYN %
+C00005 00003	% LESYN.IND %
+C00008 00004	% LESYN.FCT %
+C00009 00005	% LESYN.THY %
+C00012 00006	% LESYN.TAC %
+C00015 ENDMK
+C⊗;
+% LESYN %
+
+(TML)
+
+newtypes[``NEXP = NCON + NEXP'``; 
+         ``NEXP' = IDEN + CNEXP``;
+         ``CNEXP = NOP # NEXPPR``;
+         ``NEXPPR = NEXP # NEXP `` ] ;;
+
+newtypes[``TEXP = TCON + CTEXP``;
+         ``CTEXP = TOP # NEXPPR `` ] ;;
+
+map newconstant[
+    `isncon`,":NEXP->TR";
+    `isiden`,":NEXP->TR";
+    `iscnexp`,":NEXP->TR";
+    `mkncon`,":NCON->NEXP";
+    `mkiden`,":IDEN->NEXP";
+    `mkcnexp`,":CNEXP->NEXP";
+    `destncon`,":NEXP->NCON";
+    `destiden`,":NEXP->IDEN";
+    `destcnexp`,":NEXP->CNEXP"] ;;
+
+map newaxiom[
+    `isn`,"isncon e == ISL e";
+    `isi`,"isiden e == ISL e => FF | ISL(OUTR e)";
+    `isc`,"iscnexp e == ISL e => FF | ISR(OUTR e)";
+    `mkn`,"mkncon n == INL n";
+    `mki`,"mkiden i == INR(INL i)";
+    `mkc`,"mkcnexp c == INR(INR c)";
+    `destn`, "destncon e == OUTL e";
+    `desti`, "destiden e == OUTL(OUTR e)";
+    `destc`, "destcnexp e == OUTR(OUTR e)"];;
+
+
+
+
+
+newconstant( `expfun`, ":(NEXP->NEXP)->(NEXP->NEXP)");;
+
+newaxiom(`expax1`, " FIX expfun e == e");;
+
+newaxiom(`expax2`,
+   "expfun f e ==
+     isncon e => mkncon(destncon e) |
+     isiden e => mkiden(destiden e) |
+     iscnexp e =>
+       mkcnexp(FST(destcnexp e),
+                f(FST(SND(destcnexp e))),f(SND(SND(destcnexp e))))
+         | UU " ) ;;
+
+% LESYN.IND %
+
+let SIMPCOND eqn th = SIMP (ssadd (ASSUME eqn) BASICSS) th ;;
+
+let PROC v F Fth instl eqn th =
+  SUBST [SIMPCOND eqn th, v] F (INST instl Fth);;
+
+
+
+let NEXPINDUCT(n,i,nop,e1,e2) e F [uuth;nconth;identh;cnexpth] =
+ let isncon,isiden,iscnexp = "isncon↑e", "isiden↑e", "iscnexp↑e"
+ and f = mkvar(gentok(), ":NEXP->NEXP")
+    in
+ let G = mkquant(e, substinform[mkcomb(f,e),e] F)
+ and ax = SYM(SPEC f (SPEC e (AXIOM`LESYN` `expax2`)))
+ and PROCF = PROC e F
+    in
+ SUBST [SPEC e (AXIOM`LESYN` `expax1`) , e] F
+       (SPEC e (INDUCT ["expfun", f] G (baseth,stepth)))
+  where baseth = GEN e (SUBST [SYM(MINAP"UU↑e:NEXP") , e] F uuth)
+  and stepth = GEN e
+   let ASSG = ASSUME G in  CASES isncon
+   (PROCF nconth ["destncon↑e", n] (eqtt isncon) ax,
+    casef,
+    PROCF uuth [] (equu isncon) ax
+    where casef = 
+    let ax = SIMPCOND(eqff isncon)ax in  CASES isiden
+    (PROCF identh ["destiden↑e", i] (eqtt isiden) ax,
+     casef,
+     PROCF uuth [] (equu isiden) ax
+     where casef =
+     let ax = SIMPCOND(eqff isiden)ax in  CASES iscnexp
+     (caset,
+      PROCF uuth [] (eqff iscnexp) ax,
+      PROCF uuth [] (equu iscnexp) ax
+      where caset =
+      let ce = "destcnexp↑e" in
+      let d1,d2 = "FST(SND↑ce)", "SND(SND↑ce)" in
+      SUBST [SIMPCOND(eqtt iscnexp)ax , e] F
+       (MP(MP (INST ["FST↑ce",nop ; "↑f↑d1",e1 ; "↑f↑d2",e2] cnexpth)
+         (SPEC d1 ASSG))(SPEC d2 ASSG))
+   )))
+;;
+% LESYN.FCT %
+
+inn  "!n:NCON. isncon(mkncon n) == TT"
+
+ini  "!i:IDEN. isncon(mkiden i) == FF"
+
+inc  "!c:CNEXP. isncon(mkcnexp c) == FF"
+
+iin  "!n:NCON. isiden(mkncon n) == FF"
+
+iii  "!i:IDEN. isiden(mkiden i) == TT"
+
+iic  "!c:CNEXP. isiden(mkcnexp c) == FF"
+
+icn  "!n:NCON. iscnexp(mkncon n) == FF"
+
+ici  "!i:IDEN. iscnexp(mkiden i) == FF"
+
+icc  "!c:CNEXP. iscnexp(mkcnexp c) == TT"
+
+dnn  "!n:NCON. destncon(mkncon n) == n"
+
+dii  "!i:IDEN. destiden(mkiden i) == i"
+
+dcc  "!c:CNEXP. destcnexp(mkcnexp c) == c"
+
+% LESYN.THY %
+
+
+	THEORY LESYN
+
+
+newtypes [ ``NEXP = NCON + NEXP'`` ;
+	   ``NEXP' = IDEN + CNEXP`` ;
+	   ``CNEXP = NOP # NEXPPR`` ;
+	   ``NEXPPR = NEXP # NEXP`` ] ;;
+
+newtypes [ ``TEXP = TCON + CTEXP`` ;
+	   ``CTEXP = TOP # NEXPPR`` ] ;;
+
+newconstant ( `isncon` , ":NEXP->tr" ) ;;
+
+newconstant ( `isiden` , ":NEXP->tr" ) ;;
+
+newconstant ( `iscnexp` , ":NEXP->tr" ) ;;
+
+newconstant ( `mkncon` , ":NCON->NEXP" ) ;;
+
+newconstant ( `mkiden` , ":IDEN->NEXP" ) ;;
+
+newconstant ( `mkcnexp` , ":CNEXP->NEXP" ) ;;
+
+newconstant ( `destncon` , ":NEXP->NCON" ) ;;
+
+newconstant ( `destiden` , ":NEXP->IDEN" ) ;;
+
+newconstant ( `destcnexp` , ":NEXP->CNEXP" ) ;;
+
+newconstant ( `expfun` , ":(NEXP->NEXP)->(NEXP->NEXP)" ) ;;
+
+NEWAXIOMS();;
+
+isn  "!e:NEXP. isncon e == ISL e :tr"
+
+isi  "!e:NEXP. isiden e == ISL e=>FF|ISL(OUTR e :NEXP') :tr"
+
+isc  "!e:NEXP. iscnexp e == ISL e=>FF|ISR(OUTR e :NEXP') :tr"
+
+mkn  "!n:NCON. mkncon n == INL n :NEXP"
+
+mki  "!i:IDEN. mkiden i == INR(INL i :NEXP') :NEXP"
+
+mkc  "!c:CNEXP. mkcnexp c == INR(INR c :NEXP') :NEXP"
+
+destn  "!e:NEXP. destncon e == OUTL e :NCON"
+
+desti  "!e:NEXP. destiden e == OUTL(OUTR e :NEXP') :IDEN"
+
+destc  "!e:NEXP. destcnexp e == OUTR(OUTR e :NEXP') :CNEXP"
+
+expax1  "!e:NEXP. FIX expfun e == e"
+
+expax2  "!e:NEXP. !f:NEXP->NEXP. expfun f e == isncon e=>mkncon(destncon e)|(isiden e=>mkiden(destiden e)|(iscne~
+xp e=>mkcnexp(FST(destcnexp e), (f(FST(SND(destcnexp e) :NEXPPR)), f(SND(SND(destcnexp e) :NEXPPR))))|UU:NEXP))"
+
+% LESYN.TAC %
+
+let vary wl v = variant (v, formlfrees wl) ;;
+
+
+let NEXPINDUCTAC e (F,ss,Fl) =
+ ((  [  w "UU:NEXP" , ss , Fl ; w "mkncon↑n" , ss , Fl ;
+       w "mkiden↑i" , ss , Fl ; 
+       w "mkcnexp(↑nop,↑e1,↑e2)" , ss , w1.w2.Fl  ] ,
+  \[th1;th2;th3;th4] .  NEXPINDUCT(n,i,nop,e1,e2)e F 
+                        [th1;th2;th3;DISCH w1 (DISCH w2 th4)] 
+   ) where w1,w2 = w e1, w e2  )
+  where  w t = substinform[t,e] F
+  and [n;i;nop;e1;e2] = map(vary(F.Fl))
+             [ "n:NCON" ; "i:IDEN" ; "nop:NOP" ; "e1:NEXP";"e2:NEXP"] ;;
+
+
+
+let CONTRTAC g =
+ (let w1,w2 = destimp(fst g) in
+  let th = CONTR w2 (ASSUME w1) in [], K(DISCH w1 th)
+ ) ?
+ ( [g], hd) ;;
+
+let ADDSIMPTAC swl (w,ss,wl) =
+ SIMPTAC(w, itlist f swl ss, wl) where  f sw = ssadd(ASSUME sw) ;;
+
+let ANTETAC(w,ss,wl) =
+ (let w1,w2 = destimp w  in
+  [ w2, ssadd(ASSUME w1)ss, w1.wl] , DISCH w1 o hd
+ ) ?
+ ( [w,ss,wl] , hd ) ;;
+
+let CONDCASESTAC(fm,ss,fml) =
+ let tm = findterminform p fm
+   where p t = iscomb t &
+     (let t1,t2 = destcomb t in  isconst t1 & fst(destconst t1)=`COND`
+                     & freeinform[t2]fm )
+ in CASESTAC(snd(destcomb tm))(fm,ss,fml)  ;;
+
+let STEPTAC g = (SIMPTAC THEN (CONDCASESTAC ORELSE IDTAC) THEN SIMPTAC
+                  THEN CONTRTAC THEN ANTETAC
+                THEN ADDSIMPTAC[w1;w2])g  where (),(),w1.w2.() = g ;;
+
+let SIMPANTETAC = SIMPTAC THEN ANTETAC THEN SIMPTAC ;;
+
+let NEXPINDUCTAC' e = NEXPINDUCTAC e THENL
+          [SIMPANTETAC;SIMPANTETAC;SIMPANTETAC; STEPTAC] ;;
+

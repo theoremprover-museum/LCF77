@@ -1,0 +1,342 @@
+
+
+(DEFPROP RSPACED
+ (LAMBDA (A) (READLIST (NCONC (EXPLODE A) (EXPLODE (QUOTE / )))))
+EXPR)
+
+(DEFPROP SPACED
+ (LAMBDA(A)
+  (READLIST (NCONC (EXPLODE (QUOTE / )) (EXPLODE (RSPACED A)))))
+EXPR)
+
+(DEFPROP typemode
+ (LAMBDA (B) (SETQ %PRINTTYPES B))
+EXPR)
+
+(DEFPROP PRLET
+ (LAMBDA(S X TY)
+  (COND	((MEMQ S (QUOTE (%NIL %EMPTY))))
+	((ATOM S) (PRINC S) (PRINC (QUOTE / =/ )) (PRVALTY X TY))
+	(T (PRLET (CAR S) (CAR X) (CADR TY))
+	   (PRLET (CDR S)
+		  (CDR X)
+		  (SELECTQ (CAR TY) (MK/-LISTYP TY) (CADDR TY))))))
+EXPR)
+
+(DEFPROP PRVALTY
+ (LAMBDA(X TY)
+  (PROG	NIL
+	(PRINML X TY NIL)
+	(PRINC (QUOTE / :/ ))
+	(PRINTMTY TY)
+	(TERPRI)))
+EXPR)
+
+(DEFPROP printint
+ (LAMBDA (I) (PRINC I))
+EXPR)
+
+(DEFPROP printtok
+ (LAMBDA(TOK)
+  (PROG2 (COND
+	  ((NOT (EQ TOK EMPTYTOK))
+	   (PRINC TOKQTSYM)
+	   (PRTOK TOK)
+	   (PRINC TOKQTSYM)))
+	 TOK))
+EXPR)
+
+(DEFPROP printbool
+ (LAMBDA(B)
+  (PROG2 (PRINC (COND (B (QUOTE true)) ((QUOTE false)))) B))
+EXPR)
+
+(DEFPROP printdot
+ (LAMBDA (X) (PROG2 (PRINC (QUOTE /(/))) X))
+EXPR)
+
+(DEFPROP printterm
+ (LAMBDA(TM)
+  (PROG	(%PRINTVARS)
+	(PRINC CNRSYM)
+	(PRTM (PREPTM TM) T T)
+	(PRINC CNRSYM)
+	(RETURN TM)))
+EXPR)
+
+(DEFPROP printform
+ (LAMBDA(W)
+  (PROG	(%PRINTVARS)
+	(PRINC CNRSYM)
+	(PRFM (PREPFM W) T)
+	(PRINC CNRSYM)
+	(RETURN W)))
+EXPR)
+
+(DEFPROP printthm
+ (LAMBDA(TH)
+  (PROG	NIL
+	(MAPC (FUNCTION (LAMBDA (X) (PRINC (QUOTE /.)))) (CAR TH))
+	(PRINC (QUOTE /]/-))
+	(printform (CDR TH))
+	(RETURN TH)))
+EXPR)
+
+(DEFPROP printtype
+ (LAMBDA(TY)
+  (PROG	NIL
+	(PRINC CNRSYM)
+	(PRINC COLON)
+	(PRTY TY T)
+	(PRINC CNRSYM)
+	(RETURN TY)))
+EXPR)
+
+(DEFPROP PRINML
+ (LAMBDA(X TY CL)
+  (COND
+   ((ATOM TY) (PRINC (QUOTE /-)))
+   ((ASSOC TY %TOPVALOPS) (AP (ASSOC1 TY %TOPVALOPS) X))
+   ((SELECTQ
+     (CAR TY)
+     (MK/-NULLTYP (printdot X))
+     (MK/-INTTYP (printint X))
+     (MK/-TOKTYP (printtok X))
+     (MK/-BOOLTYP (printbool X))
+     (MK/-TERMTYP (printterm X))
+     (MK/-FORMTYP (printform X))
+     (MK/-TYPETYP (printtype X))
+     (MK/-THMTYP (printthm X))
+     (MK/-LISTYP
+      (PRINC LBRKT)
+      (COND
+       (X (PRINML (CAR X) (CADR TY) NIL)
+	  (PROG	(%TY)
+		(SETQ %TY TY)
+		(MAPCAR
+		 (FUNCTION
+		  (LAMBDA(Y)
+		   (PROG2 (PRINC (RSPACED SCOLON))
+			  (PRINML Y (CADR %TY) NIL))))
+		 (CDR X)))))
+      (PRINC RBRKT))
+     (MK/-SUMTYP
+      (COND
+       ((CAR X) (PRINC (QUOTE inr)) (PRINML (CDR X) (CADDR TY) T))
+       (T (PRINC (QUOTE inl)) (PRINML (CDR X) (CADR TY) T))))
+     (MK/-PRODTYP (AND CL (PRINC LPAREN))
+		 (PRINML (CAR X) (CADR TY) T)
+		 (PRINC COMMA)
+		 (PRINML (CDR X) (CADDR TY) NIL)
+		 (AND CL (PRINC RPAREN)))
+     (PRINC (QUOTE /-))))))
+EXPR)
+
+(DEFPROP PREPPAIR
+ (LAMBDA(PR TY)
+  (COND
+   ((AND (EQ (CAAR PR) (QUOTE comb))
+	 (EQ (CADR (CAADAR PR)) (QUOTE PAIR)))
+    (TRIPLE (QUOTE pair)
+	    (CONS (PREPTM (CDADAR PR)) (PREPTM (CDR PR)))
+	    TY))))
+EXPR)
+
+(DEFPROP PREPCOND
+ (LAMBDA(PR TY)
+  (PROG	(T1 T2 T3)
+	(COND
+	 ((AND (PROG2 (SETQ T3 (CDR PR))
+		      (EQ (CAR (SETQ PR (CAR PR))) (QUOTE comb)))
+	       (PROG2 (SETQ T2 (CDADR PR))
+		      (EQ (CAR (SETQ PR (CAADR PR))) (QUOTE comb)))
+	       (PROG2 (SETQ T1 (CDADR PR))
+		      (EQ (CADR (CAADR PR)) (QUOTE COND))))
+	  (RETURN
+	   (TRIPLE
+	    (QUOTE cond1)
+	    (CONS (PREPTM T1)
+		  (TRIPLE (QUOTE cond2)
+			  (CONS (PREPTM T2) (PREPTM T3))
+			  TY))
+	    TY))))))
+EXPR)
+
+(DEFPROP PREPTM
+ (LAMBDA(TM)
+  ((LAMBDA(PH X TY)
+    (SELECTQ
+     PH
+     ((var const) TM)
+     (abs (TRIPLE (QUOTE abs1) (CONS (CAR X) (PREPTM (CDR X))) TY))
+     (comb
+      (COND
+       ((PREPPAIR X TY))
+       ((PREPCOND X TY))
+       (T
+	((LAMBDA(X Y)
+	  (COND
+	   ((AND (EQ (CAR X) (QUOTE const))
+		 (EQ (GET (CADR X) (QUOTE OLINFIX)) (QUOTE PAIRED))
+		 (EQ (CAR Y) (QUOTE pair)))
+	    (TRIPLE (QUOTE infcomb) (CONS X (CADR Y)) TY))
+	   ((EQ (CAR X) (QUOTE listcomb))
+	    (SETQ X (CADR X))
+	    (COND
+	     ((AND
+	       (NULL (CDDR X))
+	       (EQ (CAAR X) (QUOTE const))
+	       (EQ (GET (CADAR X) (QUOTE OLINFIX)) (QUOTE CURRIED)))
+	      (TRIPLE (QUOTE infcomb) (TRIPLE (CAR X) (CADR X) Y) TY))
+	     ((TRIPLE (QUOTE listcomb) (APPEND X (LIST Y)) TY))))
+	   ((TRIPLE (QUOTE listcomb) (LIST X Y) TY))))
+	 (PREPTM (CAR X))
+	 (PREPTM (CDR X))))))
+     (ERR (QUOTE PREPTM))))
+   (CAR TM)
+   (CADR TM)
+   (CDDR TM)))
+EXPR)
+
+(DEFPROP PREPFM
+ (LAMBDA(FM)
+  (SELECTQ (CAR FM)
+	   (truth FM)
+	   ((imp conj)
+	    (TRIPLE (CAR FM) (PREPFM (CADR FM)) (PREPFM (CDDR FM))))
+	   ((equiv inequiv)
+	    (TRIPLE (CAR FM) (PREPTM (CADR FM)) (PREPTM (CDDR FM))))
+	   (quant
+	    (TRIPLE (QUOTE quant1) (CADR FM) (PREPFM (CDDR FM))))
+	   (ERR (QUOTE PREPFM))))
+EXPR)
+
+(DEFPROP PRINFIX
+ (LAMBDA (PH) (PRINC (GET PH (QUOTE PRINFIX))))
+EXPR)
+
+(DEFPROP CLOSES
+ (LAMBDA (PH1 PH2) (MEMQ PH2 (GET PH1 (QUOTE CLOSES))))
+EXPR)
+
+(DEFPROP OPOLY
+ (LAMBDA(TY)
+  (SELECTQ (CAR TY)
+	   (vartype T)
+	   (consttype NIL)
+	   (OR (OPOLY (CADR TY)) (OPOLY (CDDR TY)))))
+EXPR)
+
+(DEFPROP PRTM
+ (LAMBDA(TM PH1 NEEDTY)
+  ((LAMBDA(PH2 X TY)
+    (PROG (CL1 CL2 TYFLAG PCRATOR)
+	  (SETQ
+	   TYFLAG
+	   (COND
+	    (%PRINTTYPES
+	     (SELECTQ
+	      PH2
+	      (var
+	       (NOT
+		(AND (MEMQ X %PRINTVARS)
+		     (EQ TY (GET X (QUOTE STICKYTYPE))))))
+	      (const (AND NEEDTY (OPOLY (CONSTP X))))
+	      ((listcomb infcomb)
+	       (SETQ
+		PCRATOR
+		((LAMBDA(R)
+		  (SELECTQ (CAR R)
+			   (const (OPOLY (CONSTP (CADR R))))
+			   NIL))
+		 (SELECTQ (CAAR X) (infcomb (CAADAR X)) (CAR X))))
+	       (AND NEEDTY PCRATOR))
+	      NIL))))
+	  (SETQ CL1 (CLOSES PH1 (COND (TYFLAG (QUOTE typed)) (PH2))))
+	  (COND (CL1 (PRINC LPAREN)))
+	  (SETQ CL2 (AND TYFLAG (CLOSES (QUOTE typed) PH2)))
+	  (COND (CL2 (PRINC LPAREN)))
+	  (SELECTQ
+	   PH2
+	   (var (PUTPROP X TY (QUOTE STICKYTYPE))
+		(SETQ %PRINTVARS (CONS X %PRINTVARS))
+		(PRTOK X))
+	   (const (COND ((GET X (QUOTE OLINFIX)) (PRINC (QUOTE $))))
+		  (PRTOK X))
+	   ((abs1 cond1 cond2)
+	    (SELECTQ PH2 (abs1 (PRINC LAMTOK)) NIL)
+	    (PRTM (CAR X) PH2 NIL)
+	    (PRINFIX PH2)
+	    (PRTM (CDR X) PH2 NEEDTY))
+	   (pair (PRTM (CAR X) PH2 NEEDTY)
+		 (PRINFIX PH2)
+		 (PRTM (CDR X) PH2 NEEDTY))
+	   (listcomb
+	    (PROG (Y)
+		  (PRTM (CAR X) PH2 (NOT PCRATOR))
+	     A	  (SETQ Y (CAR X))
+		  (COND
+		   ((SETQ X (CDR X))
+		    (AND (MEMQ (CAR Y) (QUOTE (var const)))
+			 (MEMQ (CAAR X) (QUOTE (var const)))
+			 (PRINC (QUOTE / )))
+		    (PRTM (CAR X) PH2 PCRATOR)
+		    (GO A)))))
+	   (infcomb (PRTM (CADR X) PH2 PCRATOR)
+		    (PRTOK (SPACED (CADAR X)))
+		    (PRTM (CDDR X) PH2 PCRATOR))
+	   (ERR (QUOTE PRTM)))
+	  (COND
+	   (TYFLAG
+	    (COND (CL2 (PRINC RPAREN))
+		  ((SELECTQ PH2 ((var const)) (PRINC (QUOTE / )))))
+	    (PRINC COLON)
+	    (PRTY TY T)))
+	  (COND (CL1 (PRINC RPAREN)))))
+   (CAR TM)
+   (CADR TM)
+   (CDDR TM)))
+EXPR)
+
+(DEFPROP PRFM
+ (LAMBDA(FM PH1)
+  (SELECTQ
+   (CAR FM)
+   (truth (PRINC (QUOTE TRUTH)))
+   ((LAMBDA(PH2 X Y)
+     (PROG (CL)
+	   (COND ((SETQ CL (CLOSES PH1 PH2)) (PRINC LPAREN)))
+	   (SELECTQ
+	    PH2
+	    ((imp conj) (PRFM X PH2) (PRINFIX PH2) (PRFM Y PH2))
+	    ((equiv inequiv) (PRTM X PH2 NIL)
+			     (PRINFIX PH2)
+			     (PRTM Y PH2 T))
+	    (quant1 (PRINC QUANTTOK)
+		    (PRTM X PH2 T)
+		    (PRINFIX PH2)
+		    (PRFM Y PH2))
+	    (ERR (QUOTE PRFM)))
+	   (COND (CL (PRINC RPAREN)))))
+    (CAR FM)
+    (CADR FM)
+    (CDDR FM))))
+EXPR)
+
+(DEFPROP PRTY
+ (LAMBDA(TY PH1)
+  (SELECTQ
+   (CAR TY)
+   ((vartype consttype) (PRTOK (CDR TY)))
+   (PROG (CL PH2)
+	 (COND
+	  ((SETQ CL (CLOSES PH1 (SETQ PH2 (CAR TY)))) (PRINC LPAREN)))
+	 (PRTY (CADR TY) PH2)
+	 (PRINFIX PH2)
+	 (PRTY (CDDR TY) PH2)
+	 (COND (CL (PRINC RPAREN))))))
+EXPR)
+
+(DEFPROP PRTOK
+ (LAMBDA (TOK) (PRINC (COND ((EQ TOK EMPTYTOK) EMPTYPRINT) (T TOK))))
+EXPR)

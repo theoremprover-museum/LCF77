@@ -1,0 +1,4 @@
+
+FDEF1  "!y:*. !x:*. EQ x y == TT IMP EQ y y == TT"
+
+FDEF2  "!y:*. !x:*. EQ x y == FF IMP EQ y y == TT"

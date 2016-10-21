@@ -1,0 +1,109 @@
+
+
+(DEFPROP UNIFY
+ (LAMBDA (TY1 TY2) (UNIFYB (TRUNC TY1) (TRUNC TY2)))
+EXPR)
+
+(DEFPROP UNIFYB
+ (LAMBDA(BTY1 BTY2)
+  (COND	((EQUAL BTY1 BTY2))
+	((EQ (CAR BTY1) (QUOTE link))
+	 (COND ((OCCB BTY1 BTY2) NIL) ((RPLACD BTY1 BTY2))))
+	((EQ (CAR BTY2) (QUOTE link))
+	 (COND ((OCCB BTY2 BTY1) NIL) ((RPLACD BTY2 BTY1))))
+	((EQ (CAR BTY1) (CAR BTY2))
+	 (SELECTQ (CAR BTY1)
+		  ((consttype vartype) (EQ (CDR BTY1) (CDR BTY2)))
+		  (AND (UNIFY (CADR BTY1) (CADR BTY2))
+		       (UNIFY (CDDR BTY1) (CDDR BTY2)))))
+	((EQ (CAR BTY1) (QUOTE consttype))
+	 ((LAMBDA (BTY) (AND BTY (UNIFYB BTY BTY2)))
+	  (GET (CDR BTY1) (QUOTE EQTYPE))))
+	((EQ (CAR BTY2) (QUOTE consttype))
+	 ((LAMBDA (BTY) (AND BTY (UNIFYB BTY1 BTY)))
+	  (GET (CDR BTY2) (QUOTE EQTYPE))))))
+EXPR)
+
+(DEFPROP TRUNC
+ (LAMBDA(TY)
+  (COND	((AND (EQ (CAR TY) (QUOTE link)) (NOT (ATOM (CDR TY))))
+	 (TRUNC (CDR TY)))
+	(TY)))
+EXPR)
+
+(DEFPROP OCC
+ (LAMBDA (V TY) (OCCB V (TRUNC TY)))
+EXPR)
+
+(DEFPROP OCCB
+ (LAMBDA(V BTY)
+  (OR (EQ V BTY)
+      (SELECTQ (CAR BTY)
+	       ((link consttype vartype) NIL)
+	       (OR (OCC V (CADR BTY)) (OCC V (CDDR BTY))))))
+EXPR)
+
+(DEFPROP QUOTCH
+ (LAMBDA(%OB)
+  (PROG	(X %BVL %VTYL)
+	(SETQ X (QTRAP (ERRSET (QTCH (EVAL (CAR %OB))))))
+	(MAPC (FUNCTION
+	       (LAMBDA(VTY)
+		(OR (GET (CAR VTY) (QUOTE STICKYTYPE))
+		    (PUTPROP (CAR VTY)
+			     (CANONTY (CDR VTY))
+			     (QUOTE STICKYTYPE)))))
+	      %VTYL)
+	(RETURN X)))
+FEXPR)
+
+(DEFPROP TYQUOTCH
+ (LAMBDA (%OB) (QTRAP (ERRSET (EVAL (CAR %OB)))))
+FEXPR)
+
+(DEFPROP QTRAP
+ (LAMBDA(X)
+  (COND ((ATOM X) (ERR (JUXT X (QUOTE / IN/ QUOTATION)))) ((CAR X))))
+EXPR)
+
+(DEFPROP QTCH
+ (LAMBDA(OB)
+  (SELECTQ (CAR OB)
+	   (antiquot (CDR OB))
+	   ((quant imp conj equiv inequiv)
+	    (TRIPLE (CAR OB) (QTCH (CADR OB)) (QTCH (CDDR OB))))
+	   (truth OB)
+	   ((abs comb)
+	    (TRIPLE (CAR OB)
+		    (CONS (QTCH (CAADR OB)) (QTCH (CDADR OB)))
+		    (CANONTY (CDDR OB))))
+	   (var (mkrealvar (CADR OB) (CANONTY (CDDR OB))))
+	   (const (mkconst (CADR OB) (CANONTY (CDDR OB))))
+	   (ERR (QUOTE JUNKOB))))
+EXPR)
+
+(DEFPROP CANONTY
+ (LAMBDA(TY)
+  (SELECTQ (CAR TY)
+	   (link
+	    (COND ((ATOM (CDR TY)) (ERR (QUOTE TYPES/ INDETERMINATE)))
+		  ((CANONTY (CDR TY)))))
+	   ((consttype vartype) TY)
+	   ((sumtype prodtype funtype)
+	    (mktype (CAR TY) (CANONTY (CADR TY)) (CANONTY (CDDR TY))))
+	   (ERR (QUOTE JUNKTYPE))))
+EXPR)
+
+(DEFPROP OMUTANT
+ (LAMBDA (TY) (PROG (%L) (RETURN (OMUTANT1 TY))))
+EXPR)
+
+(DEFPROP OMUTANT1
+ (LAMBDA(TY)
+  (SELECTQ
+   (CAR TY)
+   (vartype
+    (COND ((ASSOC1 TY %L)) ((CDAR (PUSHQ (CONS TY (GENLINK)) %L)))))
+   ((vartype consttype) TY)
+   (TRIPLE (CAR TY) (OMUTANT1 (CADR TY)) (OMUTANT1 (CDDR TY)))))
+EXPR)

@@ -1,0 +1,183 @@
+COMMENT ⊗   VALID 00002 PAGES
+C REC  PAGE   DESCRIPTION
+C00001 00001
+C00002 00002	(LAP CLRBFI SUBR)
+C00009 ENDMK
+C⊗;
+(LAP CLRBFI SUBR)
+  (051000 11 0 0)
+  (POPJ P)
+NIL
+
+
+~↑Z  Specials:  %F, PRFLAG, %FN, %ARGS, %L, %G
+
+~↑Z  Manifest:  CR, LF
+
+~↑Z  FEXPRs:  DIN, NULLIFY
+
+~↑Z  MACROs:  EVLIST, PRINX, MAKE
+
+
+(SETQ %F NIL)
+
+(DE ERR%F (X Y) (PRINX X @": " Y CR LF (ERR %F)))
+
+(DE SLASHIFY (L) (PROG (L1) K (COND
+   ((NULL L) (RETURN (REVERSE L1)))
+   ((SETQ L1 (CONS(CAR L)(CONS @// L1))) (SETQ L (CDR L)) (GO K))
+)))
+
+(DE UNSLASHIFY (L) (PROG (L1) K (COND
+   ((NULL L) (RETURN (REVERSE L1)))
+   ((AND (EQ(CAR L)@//) (NULL(SETQ L (CDR L)))) (ERR @UNSLASHIFY))
+   (T (SETQ L1 (CONS(CAR L)L1)) (SETQ L (CDR L)) (GO K))
+)))
+
+(DE PUSHNCONC (ID X) (SET ID (NCONC (EVAL ID) (LIST X))))
+		~↑Z All values of ID must be special
+
+(DE INQ (X L) (COND ((MEMQ X L) L) ((CONS X L))))
+
+(DE OUTQ (X L) (COND (L (COND
+    ((EQ X (CAR L)) (OUTQ X (CDR L)))
+    ((CONS (CAR L) (OUTQ X (CDR L))))
+))))
+
+(DE MAPAND (F L) (OR (NULL L)
+  (AND (APPLY F (LIST (CAR L))) (MAPAND F (CDR L)))
+))
+
+(DE MAPOR (F L) (AND (NOT(NULL L))
+  (OR (APPLY F (LIST (CAR L))) (MAPOR F (CDR L)))
+))
+
+(DE QEVAL (X) (LIST @QUOTE X))
+
+(DM EVLIST (L) (LIST @EVAL (CONS @LIST (CDR L))))
+
+(DE JUXT (X Y) (implode(NCONC(explode X)(explode Y))))
+
+(DE ASK (Q) (PROG (X L)
+  (PRINX CR LF Q @/?)
+  (PROMPT 32.)
+  (CLRBFI)
+K (COND
+   ((EQ(SETQ X (READCH))CR) (PROMPT 42.) (RETURN(REVERSE L)))
+   ((SETQ L (CONS X L)) (GO K))
+)))
+
+(DE PeekINC () ((LAMBDA (CH) (PROG2 (INC CH T) CH)) (INC NIL NIL)))
+(DE PeekOUTC () ((LAMBDA (CH) (PROG2 (OUTC CH T) CH)) (OUTC NIL NIL)))
+
+(DE ProtectIO (%FN %ARGS) (PROG (ICH OCH B)
+  (SETQ ICH (PeekINC))
+  (SETQ OCH (PeekOUTC))
+  (SETQ B (ERRSET (APPLY %FN %ARGS)))
+  (OR (EQ ICH (PeekINC)) (INC ICH T))
+  (OR (EQ OCH (PeekOUTC)) (OUTC OCH T))
+  (COND ((ATOM B) (ERR B)) (T (RETURN (CAR B))) )
+))
+
+(DF DIN (L) (ProtectIO (FUNCTION (LAMBDA (L) (PROG (DEV X B)
+     (SETQ DEV @DSK:)
+   A (COND
+      ((NULL L) (RETURN @FILES-LOADED))
+      ((ISDEV(SETQ X (CAR L))) (SETQ DEV X) (GO Z))
+     )
+     (OPENERR DEV X)
+   K (COND
+      ((NOT(ATOM(SETQ B (ERRSET(EVAL(READ))))))
+       (COND (PRFLAG (PRINT(CAR B))) (T (PRINC @/:)))
+       (GO K)
+     ))
+     (OR (EQ B @$EOF$) (ERR @DIN))
+     (PRINX (AND PRFLAG (TERPRI)) X @/ LOADED)
+     (TERPRI)
+   Z (SETQ L (CDR L))
+     (GO A)
+  )))
+  (LIST L)
+))
+
+(DE ISDEV (X) (COND
+  ((ATOM X) (EQ @/: (CAR(LAST(EXPLODE X)))))
+  ((EQ(LENGTH X)2) (AND (NUMBERP(CAR X)) (NUMBERP(CADR X))))
+))
+
+(DE ISDSK (F) (ProtectIO (FUNCTION OPENP) (LIST @DSK: F)))
+
+(DE OPENERR (DEV F) (OR (OPENP DEV F) (PROG2
+   (PRINC @"CAN'T FIND ")
+   (SELECTQ %F
+    (draftin (ERR%F @DRAFT (CAR F)))
+    (newparent (ERR%F @THEORY (CAR F)))
+    (ERR%F @FILE F)
+))))
+
+(DE OPENP (DEV F) (PROG (%G %L)
+  (SETQ %L (LIST @INPUT (SETQ %G (GENSYM)) DEV F))
+  (COND
+   ((NOT(ATOM(ERRSET(INC(EVAL %L)NIL)NIL))) (RETURN T))
+   (T (ERRSET(INC %G NIL)NIL) (INC NIL T) (RETURN NIL))
+)))
+
+(DE OPENO (F) (OUTC (EVLIST @OUTPUT (GENSYM) @DSK: F) NIL))
+
+(DE CLOSEI () (INC NIL T))
+(DE CLOSEO () (OUTC NIL T))
+
+(DE OPENCOPY (F) (PROG2 (OPENO F) (COPY F)))
+(DE COPY (F) (AND (OPENP @DSK: F) (COPYTILLEOF)))
+(DE COPYTILLEOF() (ERRSET(PROG() K (TYO(TYI)) (GO K))))
+
+(DM PRINX (L) (CONS @PROG (CONS NIL (MAPCAR
+    (FUNCTION (LAMBDA (A) (COND
+       ((OR (ATOM A) (EQ(CAR A)@QUOTE)) (LIST @PRINC A))
+       ((ATOM (CDR A)) (LIST @COPY (LIST @QUOTE A)))
+       (T A)
+    )))
+    (CDR L)
+))))
+
+(DM MAKE (L) (LIST @PROG2
+  (LIST @OPENO (CADR L))
+  (CONS @PRINX (CDDR L))
+  @(CLOSEO)
+))
+
+(DE CONCAT (F1 F2) (PROG() (OPENCOPY F1) (COPY F2) (CLOSEO)))
+
+(DF NULLIFY (L) (MAPC (FUNCTION NULLIFY1) L))
+(DE NULLIFY1 (F) (OR (NULLP F) (MAKE F)))
+(DE NULLP (F) (OR
+  (NOT (OPENP @DSK: F))
+  (EQ (ERRSET(TYI)) @$EOF$)
+  (PROG2 (CLOSEI) NIL)
+))
+
+(DE SKIPTO (X) (PROG() K (OR (EQ(READCH)X) (GO K))))
+
+(DE FINDP (S) (PROG (S1 S2 X B)
+  (COND
+   ((OR(NULL S)(MEMQ @/" S))
+    (ERR%F @"BAD TOK FOR FINDP" (implode S)))
+  )
+A (SETQ S1 NIL)
+  (SETQ S2 S)
+L (COND
+   (B (SETQ X (CAR B)) (SETQ B (CDR B)))
+   ((EQ (SETQ X (ERRSET(READCH))) @$EOF$) (RETURN NIL))
+   ((SETQ X (CAR X)))
+  )
+  (COND
+   ((EQ X @/") (SETQ B NIL) (SKIPTO @/") (GO A))
+   ((EQ X (CAR S2))
+    (SETQ S1 (CONS X S1))
+    (OR (SETQ S2 (CDR S2)) (RETURN @FOUND))
+   )
+   (S1 (SETQ B (NCONC(CDR(REVERSE S1))(CONS X B))) (GO A))
+  )
+  (GO L)
+))
+

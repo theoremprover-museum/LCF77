@@ -1,0 +1,217 @@
+COMMENT ⊗   VALID 00005 PAGES
+C REC  PAGE   DESCRIPTION
+C00001 00001
+C00002 00002	
+C00003 00003	1. Terms, awff's and wff's
+C00006 00004	2. Command-Syntax
+C00009 00005	4. Syntax for deduction commands
+C00012 ENDMK
+C⊗;
+
+            GRAMMAR FOR LCF-PARSER: 
+            ----------------------
+
+
+     |       separates alternatives
+     {  }    optional                               
+     {  }*   optional, may be present 0 or more times
+     <  >    includes alternatives (separated by | )
+
+Upper case letters or quoted symbols denote characters, lower case
+letters syntactic notions. Notions ending with "-c" denote commands.
+
+"aaa-ref" always means something refering to an "aaa", whereas
+"aaa-val" means a value which is an "aaa".
+A syntactic notion ending with "-number" or "-name" is a number
+or an ident resp.
+
+
+1. Terms, awff's and wff's
+   -----------------------
+
+wff		←  awff  { ', awff }*
+
+
+awff		←  awffref  { awffmod } |
+		   term rel term
+
+  awffref	←  axiomref | stepref
+
+  awffval	←  awffref  sep
+
+  rel		←  '≡  |  '⊂
+
+
+axiomref	←  ident  { sep awffselector }
+
+  awffselector	←  number
+
+
+stepnum		←  stepnumber | labelref
+
+  labelref	←  { label } { '+ | '- { number }}
+  label		←  ident
+
+
+term		←  infixterm			|
+		   infixterm  '→ |':→  term  ', term	|
+		   termval termmod
+
+  termmod	←  '[ term '← term  { ', term '← term }* ']  termmodifier
+                                                              = substitution
+  termval	←  defval      |
+		   awffval termselector  { { sep }  selector }*
+ 
+  termselector	←  L | R | selector
+  selector	←  number
+
+  sep		←  '/  (may be changed)
+
+  defval	←  ident  sep
+
+  infixterm	←  paramterm  { infixop paramterm }*  
+  paramterm	←  paramterm1  {  paramterm1 }*  
+  paramterm1	←  simplterm  { '( termlist ') }*  
+
+  termlist	←  term  { ', term }*
+
+  simplterm	←  ident     |
+		   lambdaterm  |
+		   muterm		|
+		   sqbracketterm	|
+		   '( term ')
+
+  lambdaterm	←  'λ varlist '. term
+
+
+  varlist	←  idlist
+
+  muterm	←  'α ident '. term
+
+  sqbracketterm	←  '[  < lambdaterm | muterm >  ']
+
+
+definition	←  ident  '≡  term
+
+2. Command-Syntax
+   --------------
+
+
+axiom-c		←  AXIOM ident {':} wff ce
+
+define-c	←  < DEFINE | DEF >  definition {{',} definition }*  ce
+
+assume-c	←  ASSUME wff ce
+
+show-c		←  SHOW  < T term	|
+			 A awff		|
+			 S rangelist	|
+			 PROOF		|
+			 DEFS | 'D ident |
+			 AXIOMS | 'AX ident  >
+
+  rangelist	←  steprange {{',} steprange }*
+
+  steprange	←  stepnum ': stepnum  |  stepnum
+
+
+label-c		←  LA | LABEL  ident stepnum ce
+
+
+ce		←  "command-end character" (at present '; = sc)
+
+
+
+
+3. Command-syntax for subgoaling
+   -----------------------------
+
+
+try-c		←  TRY  { goalnumber } { tactic }  ce
+
+  tactic	←  CASES  term
+		   SCASES  term  { simplist }
+		   SIMPL  simplist
+		   SUBST  lineno  { OCC  numberlist }
+		   SSUBST  lineno  { OCC  numberlist } { simplist }
+		   INDUCT  < stepnum | defname > { OCC  numberlist }
+		   IINDUCT term  { OCC  numberlist }
+		   ABSTR
+		   CONJ
+		   PREF
+		   SPREF simplist
+		   USE  ident  { ', } {instlist }
+
+  numlist	←  number  {',  number }*
+ 
+  instlist	←  inst  { ', inst }*
+  inst		←  ident '← term
+
+  lineno	←  labelref |  stepnumber
+
+  simplist	←  simpseg  { ',  simpseg }*
+  simpseg	←  BY | WO   simpitemlist
+  simpitemlist	←  simpitem  {', simpitem }*
+  simpitem	←  simpelt  { '/  < S | L | S L >}
+  simpelt	←  range | ident | lineno
+
+  range		←  ???
+
+
+fetch-c		←  FETCH filenamelist  ce
+
+  filenamelist	←  filename  {', filename }*
+  filename	←  ident {'. ident } {'[  < ident | number > ', ident '] }
+
+4. Syntax for deduction commands
+   -----------------------------
+
+
+deduction-command  ←  appl | abstr | assume | cases |
+                      condt | condf | condu |
+                      conj | conv | cut | etaconv |
+                      equiv | fixp | half | incl | induct | min1 | min2 |
+                      refl1 | refl2 | subst | sym | trans 
+
+
+abstr		←  ABSTR  stepnum ident ce
+
+appl		←  APPL  term stepnum ce
+
+assume		←  ASSUME | SASSUME  wff  ce
+
+cases		←  CASES  stepnum stepnum stepnum ce
+
+condt		←  CONDT  condterm ce
+condf		←  CONDF  condterm ce
+condu		←  CONDU  condterm ce
+
+conj		←  CONJ  stepnum stepnum ce
+
+conv		←  CONV stepnum ce
+
+cut		←  CUT  stepnum stepnum ce
+
+etaconv		←  ETACONV  term ce
+
+equiv		←  EQUIV  stepnum {',} stepnum ce
+
+fixp		←  FIXP  stepnum ce
+
+half		←  HALF  stepnum ce
+
+incl		←  INCL  stepnum stepnum ce
+
+induct		←  INDUCT  number number number number ident ce
+
+min1-c		←  MIN1  term ce
+min2-c		←  MIN2  term ce
+
+refl1-c		←  REFL1  tterm ce
+refl2-c		←  REFL2  tterm ce
+
+subst-c		←  SUBST  stepnum  { OCC chrnum } IN number |
+		   SUBST  stepnum  { OCC chrnum } IN term
+
+trans		←  TRANS  stepnum {',} stepnum ce
+

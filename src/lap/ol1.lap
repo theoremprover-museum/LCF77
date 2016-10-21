@@ -1,0 +1,204 @@
+
+(LAP isquant SUBR) 
+	(HLRZ@ 2 1)(CAIE 2 (QUOTE quant))(TDZA 1 1)(MOVEI 1 T)(POPJ P)
+NIL 
+
+
+(LAP isimp SUBR) 
+	(HLRZ@ 2 1)(CAIE 2 (QUOTE imp))(TDZA 1 1)(MOVEI 1 T)(POPJ P)
+NIL 
+
+
+(LAP isconj SUBR) 
+	(HLRZ@ 2 1)(CAIE 2 (QUOTE conj))(TDZA 1 1)(MOVEI 1 T)(POPJ P)
+NIL 
+
+
+(LAP isequiv SUBR) 
+	(HLRZ@ 2 1)(CAIE 2 (QUOTE equiv))(TDZA 1 1)(MOVEI 1 T)(POPJ P)
+NIL 
+
+
+(LAP isinequiv SUBR) 
+	(HLRZ@ 2 1)(CAIE 2 (QUOTE inequiv))(TDZA 1 1)(MOVEI 1 T)(POPJ P)
+NIL 
+
+
+(LAP istruth SUBR) 
+	(HLRZ@ 2 1)(CAIE 2 (QUOTE truth))(TDZA 1 1)(MOVEI 1 T)(POPJ P)
+NIL 
+
+
+(LAP istype SUBR) 
+	(PUSH P 1)(PUSH P 2)(HLRZ@ 1 2)(CAME 1 -1 P)(TDZA 1 1)(MOVEI 1 T)(JUMPN 1 G0001)(HLRZ@ 1 2)
+	(CAIE 1 (QUOTE consttype))(JRST 0 G0004)(MOVEI 2 (QUOTE EQTYPE))(HRRZ@ 1 0 P)(CALL 2 (E GET))
+	(MOVEM 1 0 P)(JUMPE 1 G0007)(EXCH 2 1)(MOVE 1 -1 P)(CALL 2 (E istype))(JUMPN 1 G0006)
+G0007 (TDZA 1 1)
+G0006 (MOVEI 1 T)(JRST 0 G0001)
+G0004 (MOVEI 1 (QUOTE NIL))
+G0001 (SUB P (C 0 0 2 2))(POPJ P)
+NIL 
+
+
+(LAP issumtype SUBR) 
+	(MOVE 2 1)(MOVEI 1 (QUOTE sumtype))(JCALL 2 (E istype))
+NIL 
+
+
+(LAP isprodtype SUBR) 
+	(MOVE 2 1)(MOVEI 1 (QUOTE prodtype))(JCALL 2 (E istype))
+NIL 
+
+
+(LAP isfuntype SUBR) 
+	(MOVE 2 1)(MOVEI 1 (QUOTE funtype))(JCALL 2 (E istype))
+NIL 
+
+
+(LAP isconsttype SUBR) 
+	(HLRZ@ 2 1)(CAIE 2 (QUOTE consttype))(TDZA 1 1)(MOVEI 1 T)(POPJ P)
+NIL 
+
+
+(LAP isvartype SUBR) 
+	(HLRZ@ 2 1)(CAIE 2 (QUOTE vartype))(TDZA 1 1)(MOVEI 1 T)(POPJ P)
+NIL 
+
+
+(LAP isabs SUBR) 
+	(HLRZ@ 2 1)(CAIE 2 (QUOTE abs))(TDZA 1 1)(MOVEI 1 T)(POPJ P)
+NIL 
+
+
+(LAP iscomb SUBR) 
+	(HLRZ@ 2 1)(CAIE 2 (QUOTE comb))(TDZA 1 1)(MOVEI 1 T)(POPJ P)
+NIL 
+
+
+(LAP isvar SUBR) 
+	(HLRZ@ 2 1)(CAIE 2 (QUOTE var))(TDZA 1 1)(MOVEI 1 T)(POPJ P)
+NIL 
+
+
+(LAP isconst SUBR) 
+	(HLRZ@ 2 1)(CAIE 2 (QUOTE const))(TDZA 1 1)(MOVEI 1 T)(POPJ P)
+NIL 
+
+
+(LAP destaform SUBR) 
+	(HLRZ@ 2 1)(PUSH P 1)(PUSH P 2)(CAIE 2 (QUOTE equiv))(JRST 0 G0003)(HRRZ@ 2 1)(MOVE 1 (SPECIAL %mkequivc~
+losure))(CALL 2 (E CONS))(JRST 0 G0002)
+G0003 (CAIE 2 (QUOTE inequiv))(JRST 0 G0006)(HRRZ@ 2 1)(MOVE 1 (SPECIAL %mkinequivclosure))
+	(CALL 2 (E CONS))(JRST 0 G0002)
+G0006 (MOVEI 1 (QUOTE destaform))(CALL 1 (E ERR))
+G0009 
+G0002 (SUB P (C 0 0 2 2))(POPJ P)
+NIL 
+
+
+(LAP mkCOND SUBR) 
+	(MOVEI 2 (QUOTE MLVAL))(PUSH P 1)(MOVEI 1 (QUOTE trtype))(CALL 2 (E GET))(MOVE 2 0 P)
+	(PUSH P 1)(MOVE 1 2)(CALL 2 (E mk=funtype))(MOVE 2 1)(EXCH 1 -1 P)(CALL 2 (E mk=funtype))
+	(MOVE 2 1)(POP P 1)(CALL 2 (E mk=funtype))(MOVE 2 1)(MOVEI 1 (QUOTE COND))(SUB P (C 0 0 1 1))
+	(JCALL 2 (E mkconst))
+NIL 
+
+
+(LAP mkcond SUBR) 
+	(PUSH P 1)(PUSH P 2)(PUSH P 3)(MOVEI 2 (QUOTE MLVAL))(MOVEI 1 (QUOTE trtype))(CALL 2 (E GET))
+	(HRRZ@ 4 -2 P)(HRRZ@ 4 4)(CAME 4 1)(JRST 0 G0002)(HRRZ@ 1 3)(HRRZ@ 1 1)(HRRZ@ 5 -1 P)
+	(HRRZ@ 5 5)(CAME 5 1)(JRST 0 G0002)(HRRZ@ 1 -1 P)(HRRZ@ 1 1)(CALL 1 (E mkCOND))(MOVE 2 -2 P)
+	(CALL 2 (E mkcomb))(MOVE 2 -1 P)(CALL 2 (E mkcomb))(MOVE 2 0 P)(CALL 2 (E mkcomb))
+	(JRST 0 G0001)
+G0002 (MOVEI 1 (QUOTE mkcond))(CALL 1 (E ERR))
+G0001 (SUB P (C 0 0 3 3))(POPJ P)
+NIL 
+
+
+(LAP mkPAIR SUBR) 
+	(PUSH P 2)(PUSH P 1)(CALL 2 (E mk=prodtype))(MOVE 2 1)(EXCH 1 -1 P)(CALL 2 (E mk=funtype))
+	(MOVE 2 1)(POP P 1)(CALL 2 (E mk=funtype))(MOVE 2 1)(MOVEI 1 (QUOTE PAIR))(SUB P (C 0 0 1 1))
+	(JCALL 2 (E mkconst))
+NIL 
+
+
+(LAP mkpair SUBR) 
+	(PUSH P 2)(HRRZ@ 2 2)(HRRZ@ 2 2)(PUSH P 1)(CALL 1 (E CDDR))(CALL 2 (E mkPAIR))(POP P 2)
+	(CALL 2 (E mkcomb))(POP P 2)(JCALL 2 (E mkcomb))
+NIL 
+
+
+(LAP destcond SUBR) 
+	(PUSH P 1)(PUSH P (C 0 0 (QUOTE NIL)))(PUSH P (C 0 0 (QUOTE NIL)))(PUSH P (C 0 0 (QUOTE NIL)))
+	(CALL 1 (E iscomb))(JUMPE 1 G0005)(HRRZ@ 1 -3 P)(CALL 1 (E CDAR))(MOVEM 1 -2 P)(HRRZ@ 1 -3 P)
+	(CALL 1 (E CAAR))(MOVEM 1 -3 P)(CALL 1 (E iscomb))(JUMPE 1 G0005)(HRRZ@ 1 -3 P)(CALL 1 (E CDAR))
+	(MOVEM 1 -1 P)(HRRZ@ 1 -3 P)(CALL 1 (E CAAR))(MOVEM 1 -3 P)(CALL 1 (E iscomb))(JUMPE 1 G0005)
+	(HRRZ@ 1 -3 P)(CALL 1 (E CDAR))(HRRZ@ 2 -3 P)(HLRZ@ 2 2)(HLRZ@ 2 2)(HRRZ@ 2 2)(HLRZ@ 2 2)
+	(MOVEM 1 0 P)(CAIE 2 (QUOTE COND))(TDZA 1 1)(MOVEI 1 T)(JUMPE 1 G0005)(MOVE 2 -2 P)
+	(MOVE 1 -1 P)(CALL 2 (E CONS))(MOVE 2 0 P)(CALL 2 (E XCONS))(JRST 0 G0001)
+G0005 (MOVEI 1 (QUOTE destcond))(CALL 1 (E ERR))(MOVEI 1 (QUOTE NIL))
+G0001 (SUB P (C 0 0 4 4))(POPJ P)
+NIL 
+
+
+(LAP destpair SUBR) 
+	(PUSH P 1)(CALL 1 (E CDDR))(PUSH P 1)(PUSH P (C 0 0 (QUOTE NIL)))(PUSH P (C 0 0 (QUOTE NIL)))
+	(CALL 1 (E isprodtype))(JUMPN 1 G0006)(MOVEI 1 (QUOTE destpair))(CALL 1 (E ERR))(JRST 0 G0005)
+G0006 (MOVE 1 -3 P)(CALL 1 (E isUU))(JUMPE 1 G0009)(MOVE 1 -2 P)(CALL 1 (E destprodtype))
+	(HLRZ@ 2 1)(MOVEM 1 -2 P)(MOVEI 1 (QUOTE UU))(CALL 2 (E mkconst))(HRRZ@ 2 -2 P)(MOVEM 1 0 P)
+	(MOVEI 1 (QUOTE UU))(CALL 2 (E mkconst))(MOVEM 1 -1 P)(JRST 0 G0005)
+G0009 (MOVE 1 -3 P)(CALL 1 (E iscomb))(JUMPE 1 G0017)(HRRZ@ 1 -3 P)(CALL 1 (E CDAR))(MOVEM 1 -1 P)
+	(HRRZ@ 1 -3 P)(CALL 1 (E CAAR))(MOVEM 1 -3 P)(CALL 1 (E iscomb))(JUMPE 1 G0017)(HRRZ@ 1 -3 P)
+	(CALL 1 (E CDAR))(HRRZ@ 2 -3 P)(HLRZ@ 2 2)(HLRZ@ 2 2)(HRRZ@ 2 2)(HLRZ@ 2 2)(MOVEM 1 0 P)
+	(CAIE 2 (QUOTE PAIR))(TDZA 1 1)(MOVEI 1 T)(JUMPN 1 G0016)
+G0017 (TDZA 1 1)
+G0016 (MOVEI 1 T)(JUMPN 1 G0005)(MOVEI 1 (QUOTE destpair))(CALL 1 (E ERR))
+G0005 (MOVE 2 -1 P)(MOVE 1 0 P)(SUB P (C 0 0 4 4))(JCALL 2 (E CONS))
+NIL 
+
+
+(LAP isUU SUBR) 
+	(HRRZ@ 2 1)(HLRZ@ 2 2)(CAIE 2 (QUOTE UU))(TDZA 1 1)(MOVEI 1 T)(POPJ P)
+NIL 
+
+
+(LAP lhs SUBR) 
+	(HLRZ@ 2 1)(PUSH P 1)(PUSH P 2)(MOVEI 2 (QUOTE (equiv inequiv)))(MOVE 1 0 P)(CALL 2 (E MEMQ))
+	(JUMPE 1 G0003)(HRRZ@ 1 -1 P)(HLRZ@ 1 1)(JRST 0 G0002)
+G0003 (MOVEI 1 (QUOTE lhs))(CALL 1 (E ERR))
+G0006 
+G0002 (SUB P (C 0 0 2 2))(POPJ P)
+NIL 
+
+
+(LAP rhs SUBR) 
+	(HLRZ@ 2 1)(PUSH P 1)(PUSH P 2)(MOVEI 2 (QUOTE (equiv inequiv)))(MOVE 1 0 P)(CALL 2 (E MEMQ))
+	(JUMPE 1 G0003)(HRRZ@ 1 -1 P)(HRRZ@ 1 1)(JRST 0 G0002)
+G0003 (MOVEI 1 (QUOTE rhs))(CALL 1 (E ERR))
+G0006 
+G0002 (SUB P (C 0 0 2 2))(POPJ P)
+NIL 
+
+
+(LAP mkfreethm SUBR) 
+	(MOVEI 2 (QUOTE NIL))(JCALL 2 (E XCONS))
+NIL 
+
+
+(LAP eqtt SUBR) 
+	(MOVEI 2 (QUOTE MLVAL))(PUSH P 1)(MOVEI 1 (QUOTE tt))(CALL 2 (E GET))(EXCH 2 1)(POP P 1)
+	(JCALL 2 (E mkequiv))
+NIL 
+
+
+(LAP eqff SUBR) 
+	(MOVEI 2 (QUOTE MLVAL))(PUSH P 1)(MOVEI 1 (QUOTE ff))(CALL 2 (E GET))(EXCH 2 1)(POP P 1)
+	(JCALL 2 (E mkequiv))
+NIL 
+
+
+(LAP equu SUBR) 
+	(MOVEI 2 (QUOTE MLVAL))(PUSH P 1)(MOVEI 1 (QUOTE uutr))(CALL 2 (E GET))(EXCH 2 1)
+	(POP P 1)(JCALL 2 (E mkequiv))
+NIL 
+

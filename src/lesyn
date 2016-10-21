@@ -1,0 +1,49 @@
+
+(TML)
+
+newtypes[``NEXP = NCON + NEXP'``; 
+         ``NEXP' = IDEN + CNEXP``;
+         ``CNEXP = NOP # NEXPPR``;
+         ``NEXPPR = NEXP # NEXP `` ] ;;
+
+newtypes[``TEXP = TCON + CTEXP``;
+         ``CTEXP = TOP # NEXPPR `` ] ;;
+
+map newconstant[
+    `isncon`,":NEXP->TR";
+    `isiden`,":NEXP->TR";
+    `iscnexp`,":NEXP->TR";
+    `mkncon`,":NCON->NEXP";
+    `mkiden`,":IDEN->NEXP";
+    `mkcnexp`,":CNEXP->NEXP";
+    `destncon`,":NEXP->NCON";
+    `destiden`,":NEXP->IDEN";
+    `destcnexp`,":NEXP->CNEXP"] ;;
+
+map newaxiom[
+    `isn`,"isncon e == ISL e";
+    `isi`,"isiden e == ISL e => FF | ISL(OUTR e)";
+    `isc`,"iscnexp e == ISL e => FF | ISR(OUTR e)";
+    `mkn`,"mkncon n == INL n";
+    `mki`,"mkiden i == INR(INL i)";
+    `mkc`,"mkcnexp c == INR(INR c)";
+    `destn`, "destncon e == OUTL e";
+    `desti`, "destiden e == OUTL(OUTR e)";
+    `destc`, "destcnexp e == OUTR(OUTR e)"];;
+
+
+
+
+
+newconstant( `expfun`, ":(NEXP->NEXP)->(NEXP->NEXP)");;
+
+newaxiom(`expax1`, " FIX expfun e == e");;
+
+newaxiom(`expax2`,
+   "expfun f e ==
+     isncon e => mkncon(destncon e) |
+     isiden e => mkiden(destiden e) |
+     iscnexp e =>
+       mkcnexp(FST(destcnexp e),
+                f(FST(SND(destcnexp e))),f(SND(SND(destcnexp e))))
+         | UU " ) ;;

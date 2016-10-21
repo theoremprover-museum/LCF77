@@ -1,0 +1,83 @@
+(TML)
+%definitions needed in list stack problem in new system%
+"F:d->d";;
+"F1:d->d->dlist->d";;
+"f:d->d";;
+"x:d";;
+"P:d->tr";;
+"h:d # d -> d";;
+"g1:d->d";;
+"g2:d->d";;
+"z:d";;
+"s:dlist";;
+"Exp:(d->d)->(d#d->d)->d->d->dlist->d";;
+"e:d";;
+
+
+let th1 = ASSUME "F == FIX (\F'.\x. P x => f x |
+                  h (F' (g1 x), F' (g2 x)))";;
+let th2 = ASSUME "F1 == FIX (\F1'. \x. \z. \s. EQ s NIL => z | 
+                  P x => F1' (HD s) (h (z, f x)) (TL s) |
+                         F1' (g1 x) z (CONS (g2 x) s))";;
+let th3 = ASSUME "Exp == FIX (\Exp'.\F. \h. \x. \z. \s.
+                  EQ s NIL => z | Exp' F h (HD s) (h(z, F x)) (TL s))";;
+let th4 = ASSUME "G == FIX (\G'. \x. \z. \s. EQ s NIL => z |
+                  G' (HD s) (h(z, F x)) (TL s))";;
+
+let leftid = ASSUME "!x:d. h(e, x) == x";;
+let strictrh = ASSUME "!x:d. h(x, UU) == UU";;
+let strictlh = ASSUME "!x:d. h(UU, x) == UU";;
+let assoch = ASSUME "!a:d.!b:d.!c:d. h((h(a,b)),c) == h(a,(h(b,c)))";;
+
+let [HDCONS;TLCONS;HDLIST;TLLIST;CNSNIL;LISCNS] = map (FACT `-`) 
+    [`HDCONS`;`TLCONS`;`HDLIST`;`TLLIST`;`CNSNIL`;`LISCNS`];;
+let [NNCNS1;NNCNS2;AXLIST;AXNIL2] = map (AXIOM `-`)
+    [`NNCNS1`;`NNCNS2`;`AXLIST`;`AXNIL2`];;
+let ss23 = itlist ssadd [NNCNS1;NNCNS2;HDCONS;TLCONS;assoch;strictlh;
+                         strictrh] BASICSS;;
+let ss5  = ssadd strictlh BASICSS;;
+let ss6  = itlist ssadd [LISCNS;CNSNIL;leftid;HDLIST;TLLIST;
+                          AXLIST;AXNIL2] BASICSS;;
+
+let goal1 = "G == Exp F h ",BASICSS,[]:form list;;
+let goal2 = "F1 << Exp F h ", ss23, []:form list;;
+let goal3 = "G << F1 ", ss23, []:form list;;
+let goal4 = "F1 == Exp F h ", BASICSS,[]:form list;;
+let goal5 = "!x.!s.F1 x UU s == UU", ss5, []:form list;;
+let goal6 = "Exp F h x e (LIST dummy) == F x", ss6, []:form list;;
+
+let goal7 = "F1 x e (LIST dummy) == F x",BASICSS,[]:form list;;
+
+let TAC1 = REPEAT APPLYTAC2 THEN INDUCTAC [th4;th3] THEN SIMPTAC
+           THEN REPEAT GENTAC THEN ANYCASESTAC THEN SIMPTAC
+           THEN USEIHTAC THEN SIMPTAC;;
+
+let TAC2 = REPEAT APPLYTAC2 THEN INDUCTAC [th2] THEN SIMPTAC
+            THEN REPEAT GENTAC THEN UNWINDTAC th3 THEN
+            SIMPTAC THEN ANYCASESTAC THEN SIMPTAC THEN
+            ANYCASESTAC THEN SIMPTAC THEN UNWINDOCCSTAC [2] th1
+            THEN SIMPTAC THEN USEIHLESSTAC THEN SIMPTAC
+            THEN STRENGTHENTAC THEN SIMPTAC
+            THEN UNWINDOCCSTAC [1] th3 THEN SIMPTAC THEN
+            UNWINDOCCSTAC [1] th3 THEN SIMPTAC;;
+
+let TAClemma = INDUCTAC [th2] THEN SIMPTAC THEN REPEAT GENTAC THEN
+               SIMPTAC THEN ANYCASESTAC THEN SIMPTAC THEN
+               ANYCASESTAC THEN SIMPTAC THEN USEIHTAC THEN SIMPTAC;;
+
+let TAC3 = WEAKFIXTAC th4 THEN SIMPTAC THEN REPEAT APPLYTAC2
+            THEN SIMPTAC THEN INDUCTAC [th1] THEN 
+            UNWINDOCCSTAC [2]  th2 THEN SIMPTAC THEN REPEAT GENTAC THEN
+            ANYCASESTAC THEN SIMPTAC THEN ANYCASESTAC THEN
+            SIMPTAC THEN USEIHMORETAC THEN SIMPTAC THEN
+            USEIHMORETAC THEN SIMPTAC;;
+
+let TAC6 = UNWINDTAC th3 THEN SIMPTAC THEN UNWINDTAC th3 THEN SIMPTAC;;
+
+%TACn achieves goaln; TAClemma achieves goal5; goal3 first needs
+ the result of TAClemma goal5 in its simpset.
+to obtain goal4, do: SYM (SYNTH (TRANS ((SYM res1),res3),res2));;
+where resn is a meta-notation for the theorem achieving goaln.
+to achieve goal7, add res4 and res6 to the simpset, and do SIMPTAC.%  
+
+ 

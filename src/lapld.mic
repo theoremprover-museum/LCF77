@@ -1,0 +1,21 @@
+.R LISP 72
+=Y
+=2000 
+=34000 
+=2000 
+=2000 
+= 
+=Y
+= 
+= 
+= 
+= 
+=Y 
+= 
+ 
+*(INC(INPUT DSK: (IOX.LAP) (IOX.LSP)))
+*(SETQ PRFLAG NIL)
+*(DIN LAPLD)
+*(SETQ PRFLAG T)
+
+.SAVE LAPLCF

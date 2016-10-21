@@ -1,0 +1,13 @@
+
+(DE TML () (PROG ()
+  (TERPRI)
+  (PRINC 
+   @"LCF version 5 issued 27-oct-77
+(with simultaneous substitution and new simplification)" )
+  (TERPRI) (TERPRI)
+  (INITC)
+  (REMPROP @TML @EXPR)
+  (TML)
+))
+
+(INITFN NIL)

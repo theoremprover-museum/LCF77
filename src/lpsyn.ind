@@ -1,0 +1,40 @@
+
+(TML)
+
+let PROGINDUCT (a,te ,p1,p2) p F (uuth, assth,seqth,condth,iterth) =
+ let isass,isseq,iscond,isiter = "isass↑p","isseq↑p",
+                                 "iscond↑p","isiter↑p"
+ and f = mkvar(gentok(), ":PROG->PROG")
+    in
+ let G = mkquant(p, substinform(mkcomb(f,p),p,F))
+ and ax = SYM(SPEC f (SPEC p (AXIOM `LPSYN` `progax2`)))
+ and PROCF = PROC p F
+    in
+ SUBST p F (SPEC p (AXIOM `LPSYN` `progax1`))
+           (SPEC p (INDUCT "progfun" f G (baseth, stepth)))
+ where baseth = GEN p (SUBST p F (SYM(MINAP"UU↑p:PROG")) uuth)
+ and stepth = let ASSG = ASSUME G in    CASES isass
+ (PROCF assth [a,"destass↑p"] (eqtt isass) ax ,
+  casef,
+  PROCF uuth [] (equu isass) ax
+  where casef = let ax = SIMPCOND (eqff isass) ax  in  CASES isseq
+  (caset,casef,PROCF uuth [] (equu isseq) ax
+   where caset =
+   (let s = "destseq↑p" in let q1,q2 = "FST↑s","SND↑s" in
+    PROCF (MP(MP seqth (SPEC q1 ASSG))(SPEC q2 ASSG))
+          [ p1,"↑f↑q1" ; p2,"↑f↑q2" ] (eqtt isseq) ax
+   ) 
+   and casef = let ax = SIMPCOND (eqff isseq) ax  in  CASES iscond
+   (caset,casef,PROCF uuth [] (equu iscond) ax
+    where caset =
+    (let c = "destcond↑p" in let q1,q2 = "FST(SND↑c)","SND(SND↑c)" in
+     PROCF (MP(MP condth (SPEC q1 ASSG)) (SPEC q2 ASSG))
+           [ te,"FST↑c" ; p1,"↑f↑q1" ; p2,"↑f↑q2" ] (eqtt iscond) ax
+    )
+    and casef = let ax = SIMPCOND (eqff iscond) ax  in   CASES isiter
+    (caset,PROCF uuth[](eqff isiter)ax, PROCF uuth[](equu isiter)ax
+     where caset =
+     (let i = "destiter↑p" in let q1 = "SND↑i" in
+      PROCF (MP iterth (SPEC q1 ASSG))
+            [ te,"FST↑i" ; p1,"↑f↑q1" ] (eqtt isiter) ax
+ )))))  ;;

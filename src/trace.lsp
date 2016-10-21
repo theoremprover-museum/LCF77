@@ -1,0 +1,7 @@
+(SETQ TRACELIST NIL)
+(PUTPROP (QUOTE TRACE) 1 (QUOTE NUMARGS))
+(PUTPROP (QUOTE TRACE)
+	 (MKTIDY (QUOTE (((%a /-> %b) /-> ((%a /-> %b) # %c)) /-> ((%a /-> %b) /-> %c))))
+	 (QUOTE MLTYPE))
+(PUTPROP (QUOTE UNTRACE) 1 (QUOTE NUMARGS))
+(PUTPROP (QUOTE UNTRACE) (MKTIDY (QUOTE ((%a /-> %b) /-> bool))) (QUOTE MLTYPE))

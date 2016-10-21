@@ -1,0 +1,83 @@
+
+
+(DEFPROP twoof
+ (LAMBDA(L)
+  (COND	((AND L (CDR L)) (CONS (CAR L) (CADR L)))
+	((ERR (QUOTE twoof)))))
+EXPR)
+
+(DEFPROP threeof
+ (LAMBDA(L)
+  (COND	((AND L (CDR L) (CDDR L))
+	 (CONS (CAR L) (CONS (CADR L) (CADDR L))))
+	((ERR (QUOTE threeof)))))
+EXPR)
+
+(DEFPROP flat
+ (LAMBDA (LL) (APPLY (FUNCTION APPEND) LL))
+EXPR)
+
+(DEFPROP map
+ (LAMBDA (%%F L) (MAPCAR (FUNCTION (LAMBDA (X) (AP %%F X))) L))
+EXPR)
+
+(DEFPROP exists
+ (LAMBDA(P L)
+  (PROG	NIL
+   K	(COND ((NULL L) (RETURN NIL))
+	      ((AP P (CAR L)) (RETURN T))
+	      (T (SETQ L (CDR L)) (GO K)))))
+EXPR)
+
+(DEFPROP forall
+ (LAMBDA(P L)
+  (PROG	NIL
+   K	(COND ((NULL L) (RETURN T))
+	      ((AP P (CAR L)) (SETQ L (CDR L)) (GO K))
+	      ((RETURN NIL)))))
+EXPR)
+
+(DEFPROP revitlist
+ (LAMBDA(F L X)
+  (PROG	NIL
+   K	(COND ((NULL L) (RETURN X)))
+	(SETQ X (AP (AP F (CAR L)) X))
+	(SETQ L (CDR L))
+	(GO K)))
+EXPR)
+
+(DEFPROP find
+ (LAMBDA(P L)
+  (PROG	NIL
+   K	(COND ((NULL L) (ERR (QUOTE fail)))
+	      ((AP P (CAR L)) (RETURN (CAR L)))
+	      (T (SETQ L (CDR L)) (GO K)))))
+EXPR)
+
+(DEFPROP tryfind
+ (LAMBDA(%%F %L)
+  (PROG	(B)
+   K	(COND ((NULL %L) (ERR (QUOTE fail))))
+	(SETQ B (ERRSET (AP %%F (CAR %L))))
+	(COND ((NOT (ATOM B)) (RETURN (CAR B)))
+	      (T (SETQ %L (CDR %L)) (GO K)))))
+EXPR)
+
+(DEFPROP filter
+ (LAMBDA(P L)
+  (PROG	(R)
+   K	(COND ((NULL L) (RETURN (REVERSE R)))
+	      ((AP P (CAR L)) (SETQ R (CONS (CAR L) R))))
+	(SETQ L (CDR L))
+	(GO K)))
+EXPR)
+
+(DEFPROP mapfilter
+ (LAMBDA(%%F %L)
+  (PROG	(B R)
+   K	(COND ((NULL %L) (RETURN (REVERSE R))))
+	(SETQ B (ERRSET (AP %%F (CAR %L))))
+	(COND ((NOT (ATOM B)) (SETQ R (CONS (CAR B) R))))
+	(SETQ %L (CDR %L))
+	(GO K)))
+EXPR)

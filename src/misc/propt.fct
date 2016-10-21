@@ -1,0 +1,14 @@
+
+AXMPP  "!q:tr. !p:tr. ORP(NOTP p)q == TT & p == TT IMP q == TT"
+
+FNOTP1  "!p:tr. p == TT IMP NOTP p == FF"
+
+FNOTP2  "!p:tr. p == FF IMP NOTP p == TT"
+
+FNOTP3  "!p:tr. NOTP(NOTP p) == p"
+
+AXMPP1  "!q:tr. !p:tr. ORP p q == TT & p == FF IMP q == TT"
+
+FCONT1  "TT == UU:tr IMP TT == FF"
+
+FCONT2  "FF == UU:tr IMP TT == FF"

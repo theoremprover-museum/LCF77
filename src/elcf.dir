@@ -1,0 +1,118 @@
+...... PPN = LCFFWH ....... Total DSK   Space used in words = 176153 .......
+Filename Ext     P  PN     Size    Date     Time  Pro  Dump Date    Last Referenced
+AXIOMS   XTR    LCFFWH      126  28-Jan-78  1834  000 30-Jan-78T 0  28-Jan-78
+CLRBFI   LAP    LCFFWH       12  26-Jan-78  1414  000 30-Jan-78P 1  26-Jan-78
+CONSTS   XTR    LCFFWH       32  28-Jan-78  1834  000 30-Jan-78T 0  28-Jan-78
+DEF      LSN    LCFFWH      692  26-Jan-78  1317  000 30-Jan-78P 1  28-Jan-78
+DEF      NVO    LCFFWH      470  26-Jan-78  1316  000 30-Jan-78P 1  28-Jan-78
+DLIST    DFT    LCFFWH      179  26-Jan-78  1317  000 30-Jan-78P 1  28-Jan-78
+DLIST    FCT    LCFFWH     1020  26-Jan-78  1317  000 30-Jan-78P 1  28-Jan-78
+DML             LCFFWH      674  26-Jan-78  1248  000 30-Jan-78P 1  26-Jan-78
+DML      LAP    LCFFWH     1362  26-Jan-78  1308  000 30-Jan-78P 1  26-Jan-78
+DML      LSP    LCFFWH      499  26-Jan-78  1308  000 30-Jan-78P 1  26-Jan-78
+DRUL     ML     LCFFWH      131  26-Jan-78  1413  000 30-Jan-78P 1  26-Jan-78
+EQUT     FCT    LCFFWH       22  26-Jan-78  1317  000 30-Jan-78P 1  26-Jan-78
+EQUT     THY    LCFFWH      136  26-Jan-78  1317  000 30-Jan-78P 1  28-Jan-78
+FACTS    XTR    LCFFWH        0  26-Jan-78  1611  000               28-Jan-78
+FIXT     FCT    LCFFWH       96  26-Jan-78  1317  000 30-Jan-78P 1  26-Jan-78
+FIXT     THY    LCFFWH        6  26-Jan-78  1317  000 30-Jan-78P 1  28-Jan-78
+FOO             LCFFWH      256  27-Jan-78  1328  000 30-Jan-78T 0  27-Jan-78
+GEN      ML     LCFFWH      181  26-Jan-78  1309  000 30-Jan-78P 1  26-Jan-78
+GP              LCFFWH      432  26-Jan-78  1247  000 30-Jan-78P 1  26-Jan-78
+GP       LAP    LCFFWH      729  26-Jan-78  1414  000 30-Jan-78P 1  26-Jan-78
+GPX             LCFFWH      264  26-Jan-78  1247  000 30-Jan-78P 1  26-Jan-78
+IOX             LCFFWH      884  26-Jan-78  1314  000 30-Jan-78P 1  26-Jan-78
+IOX      LAP    LCFFWH     2232  26-Jan-78  1314  000 30-Jan-78P 1  26-Jan-78
+IOX      LSP    LCFFWH       92  26-Jan-78  1314  000 30-Jan-78P 1  26-Jan-78
+LAPLD           LCFFWH      384  26-Jan-78  1635  000 30-Jan-78P 1  26-Jan-78
+LAPLD    E      LCFFWH      384  26-Jan-78  1451  000 30-Jan-78P 1  26-Jan-78
+LAPLD    MIC    LCFFWH       39  26-Jan-78  1314  000 30-Jan-78P 1  26-Jan-78
+LCF      DMP    LCFFWH    75716  28-Jan-78  1833  000 30-Jan-78T 0  28-Jan-78
+LCFM            LCFFWH     2968  26-Jan-78  1247  000 30-Jan-78P 1  26-Jan-78
+LCFM     LAP    LCFFWH     5721  26-Jan-78  1415  000 30-Jan-78P 1  26-Jan-78
+LCFM     LSP    LCFFWH      936  26-Jan-78  1415  000 30-Jan-78P 1  26-Jan-78
+LCFO            LCFFWH      991  26-Jan-78  1247  000 30-Jan-78P 1  26-Jan-78
+LCFO     LAP    LCFFWH     1990  26-Jan-78  1414  000 30-Jan-78P 1  26-Jan-78
+LCFO     LSP    LCFFWH      197  26-Jan-78  1414  000 30-Jan-78P 1  26-Jan-78
+LEAN            LCFFWH      772  26-Jan-78  1247  000 30-Jan-78P 1  26-Jan-78
+LEAN     LAP    LCFFWH     1580  26-Jan-78  1414  000 30-Jan-78P 1  26-Jan-78
+LEANPR          LCFFWH      422  26-Jan-78  1414  000 30-Jan-78P 1  26-Jan-78
+LESYN           LCFFWH      259  26-Jan-78  1318  000 30-Jan-78P 1  26-Jan-78
+LESYN    FCT    LCFFWH      104  26-Jan-78  1317  000 30-Jan-78P 1  26-Jan-78
+LESYN    IND    LCFFWH      384  27-Jan-78  1623  000 30-Jan-78T 0  28-Jan-78
+LESYN    TAC    LCFFWH      384  27-Jan-78  1624  000 30-Jan-78T 0  28-Jan-78
+LESYN    THY    LCFFWH      304  26-Jan-78  1318  000 30-Jan-78P 1  28-Jan-78
+LESYN1          LCFFWH      132  26-Jan-78  1318  000 30-Jan-78P 1  26-Jan-78
+LESYN1   DFT    LCFFWH      167  26-Jan-78  1611  000 30-Jan-78P 1  28-Jan-78
+LESYN1   FCT    LCFFWH       63  26-Jan-78  1611  000 30-Jan-78P 1  26-Jan-78
+LIS             LCFFWH      343  26-Jan-78  1255  000 30-Jan-78P 1  26-Jan-78
+LIS      LAP    LCFFWH      741  26-Jan-78  1309  000 30-Jan-78P 1  26-Jan-78
+LIS      LSP    LCFFWH      337  26-Jan-78  1310  000 30-Jan-78P 1  26-Jan-78
+LIS      ML     LCFFWH      189  26-Jan-78  1310  000 30-Jan-78P 1  26-Jan-78
+LOOKUP          LCFFWH      128  28-Jan-78  1827  000 30-Jan-78T 0  28-Jan-78
+LPSYN    A      LCFFWH      358  26-Jan-78  1317  000 30-Jan-78P 1  26-Jan-78
+LPSYN    IND    LCFFWH      334  26-Jan-78  1317  000 30-Jan-78P 1  26-Jan-78
+LSPLD           LCFFWH      143  26-Jan-78  1314  000 30-Jan-78P 1  26-Jan-78
+LSPLD    MIC    LCFFWH       32  26-Jan-78  1314  000 30-Jan-78P 1  26-Jan-78
+LSTACS   NEW    LCFFWH     1590  26-Jan-78  1317  000 30-Jan-78P 1  30-Jan-78
+MLPRIN          LCFFWH      512  28-Jan-78  1827  000 30-Jan-78T 0  28-Jan-78
+MLPRIN   LAP    LCFFWH      869  26-Jan-78  1415  000 30-Jan-78P 1  26-Jan-78
+OL0             LCFFWH     1363  26-Jan-78  1256  000 30-Jan-78P 1  26-Jan-78
+OL0      LAP    LCFFWH     2525  26-Jan-78  1310  000 30-Jan-78P 1  26-Jan-78
+OL0      LSP    LCFFWH      766  26-Jan-78  1310  000 30-Jan-78P 1  26-Jan-78
+OL1             LCFFWH      701  26-Jan-78  1256  000 30-Jan-78P 1  26-Jan-78
+OL1      LAP    LCFFWH     1282  26-Jan-78  1310  000 30-Jan-78P 1  26-Jan-78
+OL1      LSP    LCFFWH      810  26-Jan-78  1310  000 30-Jan-78P 1  26-Jan-78
+OL2             LCFFWH     1648  26-Jan-78  1256  000 30-Jan-78P 1  26-Jan-78
+OL2      LAP    LCFFWH     3962  26-Jan-78  1310  000 30-Jan-78P 1  26-Jan-78
+OL2      LSP    LCFFWH      162  26-Jan-78  1311  000 30-Jan-78P 1  26-Jan-78
+OL2      ML     LCFFWH       54  26-Jan-78  1311  000 30-Jan-78P 1  26-Jan-78
+OL3             LCFFWH      283  26-Jan-78  1256  000 30-Jan-78P 1  26-Jan-78
+OL3      LAP    LCFFWH      575  26-Jan-78  1313  000 30-Jan-78P 1  26-Jan-78
+OL3      LSP    LCFFWH      218  26-Jan-78  1313  000 30-Jan-78P 1  26-Jan-78
+OL3      ML     LCFFWH      605  26-Jan-78  1313  000 30-Jan-78P 1  26-Jan-78
+OPP             LCFFWH      309  26-Jan-78  1247  000 30-Jan-78P 1  26-Jan-78
+OPP      LAP    LCFFWH      557  26-Jan-78  1414  000 30-Jan-78P 1  26-Jan-78
+PARENT   XTR    LCFFWH        5  28-Jan-78  1834  000 30-Jan-78T 0  28-Jan-78
+PCRUL    ML     LCFFWH      342  26-Jan-78  1313  000 30-Jan-78P 1  26-Jan-78
+PPLAMB   LSP    LCFFWH       24  26-Jan-78  1310  000 30-Jan-78P 1  26-Jan-78
+PPLAMB   ML     LCFFWH       79  26-Jan-78  1310  000 30-Jan-78P 1  26-Jan-78
+PPSAV    TMP    LCFFWH      155  26-Jan-78  1413  000               28-Jan-78
+PROMPT          LCFFWH       21  26-Jan-78  1246  000 30-Jan-78P 1  26-Jan-78
+PROMPT   LAP    LCFFWH       38  26-Jan-78  1414  000 30-Jan-78P 1  26-Jan-78
+PROPT    FCT    LCFFWH       67  26-Jan-78  1317  000 30-Jan-78P 1  26-Jan-78
+PROPT    THY    LCFFWH       44  26-Jan-78  1317  000 30-Jan-78P 1  28-Jan-78
+PTBLE           LCFFWH      369  26-Jan-78  1414  000 30-Jan-78P 1  26-Jan-78
+RUL      ML     LCFFWH     1500  26-Jan-78  1313  000 30-Jan-78P 1  26-Jan-78
+SHARE           LCFFWH      463  26-Jan-78  1247  000 30-Jan-78P 1  26-Jan-78
+SHARE    LAP    LCFFWH      917  26-Jan-78  1415  000 30-Jan-78P 1  26-Jan-78
+SIMPL           LCFFWH      691  26-Jan-78  1257  000 30-Jan-78P 1  26-Jan-78
+SIMPL    LAP    LCFFWH     1674  26-Jan-78  1313  000 30-Jan-78P 1  26-Jan-78
+SIMPL    LSP    LCFFWH       31  26-Jan-78  1313  000 30-Jan-78P 1  26-Jan-78
+SIMPL    ML     LCFFWH     2329  26-Jan-78  1313  000 30-Jan-78P 1  26-Jan-78
+SYMBS           LCFFWH      552  26-Jan-78  1414  000 30-Jan-78P 1  26-Jan-78
+TAC      ML     LCFFWH      736  26-Jan-78  1413  000 30-Jan-78P 1  26-Jan-78
+TCL      ML     LCFFWH      159  26-Jan-78  1414  000 30-Jan-78P 1  26-Jan-78
+THYFNS          LCFFWH     2866  26-Jan-78  1255  000 30-Jan-78P 1  26-Jan-78
+THYFNS   LAP    LCFFWH     5988  26-Jan-78  1309  000 30-Jan-78P 1  26-Jan-78
+THYFNS   LSP    LCFFWH      386  26-Jan-78  1309  000 30-Jan-78P 1  26-Jan-78
+THYFNS   ML     LCFFWH       20  26-Jan-78  1309  000 30-Jan-78P 1  26-Jan-78
+TML             LCFFWH      953  26-Jan-78  1248  000 30-Jan-78P 1  26-Jan-78
+TML      LAP    LCFFWH     2064  26-Jan-78  1309  000 30-Jan-78P 1  26-Jan-78
+TML      LSP    LCFFWH       42  26-Jan-78  1309  000 30-Jan-78P 1  26-Jan-78
+TMLINI          LCFFWH       46  26-Jan-78  1314  000 30-Jan-78P 1  26-Jan-78
+TRACE    LAP    LCFFWH      300  26-Jan-78  1314  000 30-Jan-78P 1  26-Jan-78
+TRACE    LSP    LCFFWH       64  26-Jan-78  1314  000 30-Jan-78P 1  26-Jan-78
+TRAN            LCFFWH     2318  26-Jan-78  1248  000 30-Jan-78P 1  26-Jan-78
+TRAN     LAP    LCFFWH     5701  26-Jan-78  1415  000 30-Jan-78P 1  26-Jan-78
+TRAN     LSP    LCFFWH       96  26-Jan-78  1415  000 30-Jan-78P 1  26-Jan-78
+TYPEML          LCFFWH     3764  26-Jan-78  1248  000 30-Jan-78P 1  26-Jan-78
+TYPEML   LAP    LCFFWH     8053  26-Jan-78  1415  000 30-Jan-78P 1  26-Jan-78
+TYPEML   LSP    LCFFWH        3  26-Jan-78  1415  000 30-Jan-78P 1  26-Jan-78
+TYPEOL          LCFFWH      550  26-Jan-78  1248  000 30-Jan-78P 1  26-Jan-78
+TYPEOL   LAP    LCFFWH     1322  26-Jan-78  1415  000 30-Jan-78P 1  26-Jan-78
+TYPES    XTR    LCFFWH        0  28-Jan-78  1834  000               28-Jan-78
+WRITML          LCFFWH     1577  26-Jan-78  1248  000 30-Jan-78P 1  26-Jan-78
+WRITML   LAP    LCFFWH     3588  26-Jan-78  1309  000 30-Jan-78P 1  26-Jan-78
+WRITML   LSP    LCFFWH      436  26-Jan-78  1309  000 30-Jan-78P 1  26-Jan-78
+

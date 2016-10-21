@@ -1,0 +1,129 @@
+COMMENT ⊗   VALID 00002 PAGES
+C REC  PAGE   DESCRIPTION
+C00001 00001
+C00002 00002		MODIFICATIONS OF LCF
+C00010 ENDMK
+C⊗;
+	MODIFICATIONS OF LCF
+
+This file contains a listing of points, where the new LCF system
+differs from the old one. Because of the changes made to the
+syntax and a couple of semantic functions old input files won't
+always work. For details of the syntax see the file LCF.GRA.
+
+
+
+1. Term-syntax
+   -----------
+
+Besides the standard term expressions a term can be referred to by
+   - definition reference (see below),
+   - stepnumbers, including labels (see below),
+   - a selected subterm of a wff, awff, or term (see 1.1); e.g. T/3
+     refers to the 3rd subexpression of T (if it exists and is a term).
+
+
+1.1 Subexpression selection
+    -----------------------
+
+If you try to select a non-existing subterm the system will complain;
+perhaps you will also have other trouble.
+The syntax for term reference is
+<term name> {'/ <number>}*
+where <term name> can be a definition name (see below) or one of the
+terms of an awff. Awff's are referred to in the same way.
+
+
+
+2. Reference to stepnumbers
+   ------------------------
+
+Instead of repetitions of "-" the system now wants a "-", optionally
+followed by a number; i.d. instead of "----" you now have to type "-4".
+Labels must not be preceeded by a dot (but see below under 5.).
+
+
+
+3. Subgoaling: Tactics-commands
+   ----------------------------
+There is a new tactic SCASES which knocks out the trivial cases by
+calling SIMPL immediately, otherwise it works like CASES.
+
+In the CASES/SCASES-tactics the term can be omitted if the lefthand-side
+of the goal to be tried is a conditional expression; in this case the
+required term is the cond-term of that expression.
+
+The INDUCT-tactic does not generated the base-case, if it is trivial
+(but generates the corresponding proofstep).
+The command "TRY QED <optional stepnumber> ;" is the same as the sequence
+"TRY; QED <...>;".
+
+
+
+
+4. Showing
+   -------
+
+There is a feature for options added to the show-command.
+For the time being  it works only in the constellation
+"SHOW PROOF <rangelist> /NOG ".
+The switch /NOG means: don't print the goal structure part of
+the proof,i.e. only the proofsteps will be shown.
+This feature is to be extended to other areas.
+
+
+5. Definitions
+   -----------
+
+There is a feature added to define functions (and other terms).
+The command-syntax is
+   DEFINE | DEF  termname '≡ term  ';
+where  termname ← ident | delimiter.
+Definitions are hold in a special list; they are refered to by the
+term-reference mechanism: the termname followed by ': or '/ refers
+to the defined term and may occur wherever a term is required.
+Besides that, definition can be refered to where either a wff or
+a stepnumber is required; in these cases the name of the defined
+term is sufficient. Thus "SUBST F" means "Replace (all occurences of)
+the name F by its definition (i.e., the right hand side of the associated
+awff) if it exists (otherwise the command is undefined; but see below!).
+The system attempts to use the definition in
+the appropriate form, e.g. if F has been defined as a mu-expression
+the command "SUBST F" will take the fixpoint whereas "INDUCT F"
+takes the original mu-form.
+Since the system cannot distinguish between
+identifiers denoting definitions, axioms or labels, it is the users
+job to pick disjoint names to avoid confusion in the system (and his proofs).
+For instance the command "SUBST F" will have different meaning
+depending on if a definition for F has been made, a label F has
+been declared etc. The system checks for definition, axioms, labels
+in this order.
+
+A more recent version may have some predefined operations, e.g. for for
+function composition. You can find out by typing the command
+"SHOW DEFINITIONS;".
+
+
+
+
+6. System-Initialization
+   ---------------------
+Due to the absence of MLISP2 there is a different procedure for allocating
+the token stack size. If there are more then (octal 500) tokens in a
+command line (this may happen, e.g., in axioms), then the size of the token
+stack must be redefined by "(INIT nn)" with nn a number≥500.
+In addition to the optional allocation the user has to go through a procedure
+that initializes the appropriate status of the system. For the time being,
+the system will ask "STATUS:" and the user can answer "TFL" (or short: T)
+or "LCF" (as a matter of fact any input other than TFL or T will cause
+the system initializing to LCF). The differences between the two versions
+are described in the file TFL.NEW[TFL,FWH].
+
+
+
+7. Commands
+   --------
+
+Some commands can be abbreviated, e.g. ASSUME to AS, SHOW to SH etc.
+For details see LCF.GRA.
+

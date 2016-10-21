@@ -1,0 +1,118 @@
+
+(SETQ CMNTCHR (QUOTE %))
+(SETQ CTRLDSYM @∧)
+
+(SETQ SPACE (QUOTE / ))
+(SETQ CR @/
+)
+(SETQ LF @/
+)
+(SETQ TAB @/	)
+(SETQ LPAREN @/()
+(SETQ RPAREN @/))
+(SETQ PERIOD @/.)
+(SETQ COMMA @/,)
+(SETQ COLON @/:)
+(SETQ SCOLON @/;)
+(SETQ LBRKT @/[)
+(SETQ RBRKT @/])
+
+(SETQ ENDCNRTOK @/")
+(SETQ ANTICNRTOK @/↑)
+(SETQ CONDLTOK @/=/>)
+(SETQ ELSETOK @/|)
+(SETQ LAMTOK @/\)
+(SETQ EQTOK @/=/=)
+(SETQ INEQTOK @/</<)
+(SETQ CONJTOK @/&)
+(SETQ IMPTOK @IMP)
+(SETQ QUANTTOK @/!)
+(SETQ TRUTHTOK @TRUTH)
+(SETQ FIXTOK @FIX)
+(SETQ BOTTOK @UU)
+(SETQ TTOK @TT)
+(SETQ FTOK @FF)
+(SETQ ARROWTOK @/-/>)
+(SETQ SUMTOK @/+)
+(SETQ PRODTOK @/#)
+(SETQ NULLTYPTOK @/.)
+
+
+(SETQ SPECTOKS @(/: /( /) /' /↑   /=/> /, /\ /.   /=/= /</< /& IMP /! /"
+                  /[ /] /; /|))
+
+
+(SETQ TMLSYM @;;)
+(SETQ TOKQTSYM @/`)
+(SETQ ESCAPESYM @//)
+(SETQ EXFIXSYM @/$)
+(SETQ DECTMNR @/;;)
+(SETQ NEGSYM @not)
+(SETQ ARROWSYM @/-/>)
+(SETQ PRODSYM @/#)
+(SETQ SUMSYM @/+)
+(SETQ LISTSYM @list)
+(SETQ NULLSYM @/.)
+(SETQ CNRSYM @/")
+(SETQ ENDCNRSYM @/")
+(SETQ QUOTESYM @/`/`)
+(SETQ TCNSTSYM @/←)
+(SETQ MULSYM @/*)
+(SETQ DIVSYM @//)
+(SETQ PLUSSYM @/+)
+(SETQ MNSSYM @/-)
+(SETQ CONCSYM @/@)
+(SETQ EQSYM @/=)
+(SETQ LTSYM @/<)
+(SETQ GTSYM @/>)
+(SETQ CONJSYM @/&)
+(SETQ DISJSYM @or)
+(SETQ CONDLSYM @/=/>)
+(SETQ LAMSYM @/\)
+(SETQ ASGNSYM @/:/=)
+(SETQ LABSYM @/:/:)
+(SETQ ELSESYM @/|)
+(SETQ TP1SYM @/?)
+(SETQ TP3SYM @/?/?)
+(SETQ TP5SYM @/?/\)
+(SETQ TP2SYM @/!)
+(SETQ TP4SYM @/!/!)
+(SETQ TP6SYM @/!/\)
+
+(SETQ TPSYMS (LIST TP1SYM TP2SYM TP3SYM TP4SYM TP5SYM TP6SYM))
+
+
+(SETQ SPECSYMS @(/: /( /) /# /-/> /, /. /[ /] /; /;/; /:/= /:/: /|  
+     /" /% /$ /` /`/` /← /* // /+ /- /@ /= /< /> /& /=/> /\
+     /? /?/? /?/\ /! /!/! /!\))
+
+(SETQ RSVDWDS @(let letref letrec
+                deftype lettype letrectype abstype absrectype
+                where whereref whererec and with in
+                fail failwith or not
+                test then loop else))
+
+
+
+(SETQ TERMCONSTRS @(mk=vartok mk=consttok mk=comb mk=pair mk=abs 
+                    mk=empty mk=cond mk=typed))
+
+(SETQ WFFCONSTRS @(mk=equiv mk=inequiv mk=imp mk=conj mk=quant 
+                   mk=truth))
+
+(SETQ DECLNCONSTRS @(MK-LET MK-LETREC MK-LETREF MK-DEFTYPE 
+                     MK-DEFRECTYPE MK-ABSTYPE MK-ABSRECTYPE))
+
+(SETQ EXPRCONSTRS @(MK-BOOLCONST MK-INTCONST MK-TOKCONST MK-VAR
+          MK-APPN MK-ABSTR MK-DUPL MK-EMPTY MK-NIL MK-CONDE
+          MK-FAIL  MK-BINOP MK-UNOP
+          MK-ASSIGN MK-LIST MK-SEQ MK-DO MK-TRAP MK-TEST  
+          MK-STRAINT MK-IN MK-IND MK-QUOT MK-TYQUOT))
+
+
+(SETQ TOKBEARER @"<token>")
+(SETQ TOKLBEARER @"<token list>")
+(SETQ NILREP @/%NIL)
+(SETQ LASTVALNAME @it)
+(SETQ LINKCOUNT 0)
+(SETQ PPSYM @" ... ")

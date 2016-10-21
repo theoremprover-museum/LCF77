@@ -1,0 +1,22 @@
+
+.R LISP 72
+=Y
+=3000 
+= 
+=2000 
+=2000 
+= 
+=Y
+= 
+= 
+= 
+= 
+=Y
+= 
+
+*(INC(INPUT DSK:  IOX)) 
+*(SETQ PRFLAG NIL)
+*(DIN LSPLD)
+
+
+.save LSPLCF

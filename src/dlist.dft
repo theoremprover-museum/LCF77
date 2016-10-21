@@ -1,0 +1,41 @@
+
+newparent `PROPT` ;;
+
+newparent `EQUT` ;;
+
+newparent `FIXT` ;;
+
+newtypes [ ``dlist = . + dpair`` ;
+	   ``dpair = d # dlist`` ] ;;
+
+newconstant ( `HD` , ":dlist->d" ) ;;
+
+newconstant ( `TL` , ":dlist->dlist" ) ;;
+
+newconstant ( `CONS` , ":d->(dlist->dlist)" ) ;;
+
+newconstant ( `NIL` , ":dlist" ) ;;
+
+newconstant ( `dummy` , ":d" ) ;;
+
+newconstant ( `LIST` , ":d->dlist" ) ;;
+
+NEWAXIOMS();;
+
+AXHD  "HD == \dl:dlist.FST(OUTR dl :dpair) :d"
+
+AXTL  "TL == \dl:dlist.SND(OUTR dl :dpair) :dlist"
+
+AXNIL  "NIL == INL () :dlist"
+
+AXCONS  "CONS == \d:d.\dl:dlist.INR(d, dl) :dlist"
+
+AXNIL2  "EQ NIL NIL == TT"
+
+AXLIST  "LIST == \d:d.INR(d, NIL) :dlist"
+
+NNCNS1  "!d:d. !s:dlist. EQ s NIL == FF IMP EQ(CONS d s)NIL == FF"
+
+NNCNS2  "!d:d. !s:dlist. EQ s NIL == TT IMP EQ(CONS d s)NIL == FF"
+
+% the last two should actually be proved as facts by contradiction %

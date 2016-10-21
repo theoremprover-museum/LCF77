@@ -1,0 +1,162 @@
+
+
+(DEFPROP isquant
+ (LAMBDA (w) (EQ (CAR w) (QUOTE quant)))
+EXPR)
+
+(DEFPROP isimp
+ (LAMBDA (w) (EQ (CAR w) (QUOTE imp)))
+EXPR)
+
+(DEFPROP isconj
+ (LAMBDA (w) (EQ (CAR w) (QUOTE conj)))
+EXPR)
+
+(DEFPROP isequiv
+ (LAMBDA (w) (EQ (CAR w) (QUOTE equiv)))
+EXPR)
+
+(DEFPROP isinequiv
+ (LAMBDA (w) (EQ (CAR w) (QUOTE inequiv)))
+EXPR)
+
+(DEFPROP istruth
+ (LAMBDA (w) (EQ (CAR w) (QUOTE truth)))
+EXPR)
+
+(DEFPROP istype
+ (LAMBDA(prop ty)
+  (COND	((EQ (CAR ty) prop))
+	((EQ (CAR ty) (QUOTE consttype))
+	 (AND (SETQ ty (GET (CDR ty) (QUOTE EQTYPE)))
+	      (istype prop ty)))))
+EXPR)
+
+(DEFPROP issumtype
+ (LAMBDA (ty) (istype (QUOTE sumtype) ty))
+EXPR)
+
+(DEFPROP isprodtype
+ (LAMBDA (ty) (istype (QUOTE prodtype) ty))
+EXPR)
+
+(DEFPROP isfuntype
+ (LAMBDA (ty) (istype (QUOTE funtype) ty))
+EXPR)
+
+(DEFPROP isconsttype
+ (LAMBDA (ty) (EQ (CAR ty) (QUOTE consttype)))
+EXPR)
+
+(DEFPROP isvartype
+ (LAMBDA (ty) (EQ (CAR ty) (QUOTE vartype)))
+EXPR)
+
+(DEFPROP isabs
+ (LAMBDA (t) (EQ (CAR t) (QUOTE abs)))
+EXPR)
+
+(DEFPROP iscomb
+ (LAMBDA (t) (EQ (CAR t) (QUOTE comb)))
+EXPR)
+
+(DEFPROP isvar
+ (LAMBDA (t) (EQ (CAR t) (QUOTE var)))
+EXPR)
+
+(DEFPROP isconst
+ (LAMBDA (t) (EQ (CAR t) (QUOTE const)))
+EXPR)
+
+(DEFPROP destaform
+ (LAMBDA(w)
+  (SELECTQ (CAR w)
+	   (equiv (CONS %mkequivclosure (CDR w)))
+	   (inequiv (CONS %mkinequivclosure (CDR w)))
+	   (ERR (QUOTE destaform))))
+EXPR)
+
+(DEFPROP mkCOND
+ (LAMBDA(ty)
+  (mkconst (QUOTE COND)
+	   (mk=funtype (GET (QUOTE trtype) (QUOTE MLVAL))
+		       (mk=funtype ty (mk=funtype ty ty)))))
+EXPR)
+
+(DEFPROP mkcond
+ (LAMBDA(tr t1 t2)
+  (COND	((AND (EQ (CDDR tr) (GET (QUOTE trtype) (QUOTE MLVAL)))
+	      (EQ (CDDR t1) (CDDR t2)))
+	 (mkcomb (mkcomb (mkcomb (mkCOND (CDDR t1)) tr) t1) t2))
+	((ERR (QUOTE mkcond)))))
+EXPR)
+
+(DEFPROP mkPAIR
+ (LAMBDA(ty1 ty2)
+  (mkconst (QUOTE PAIR)
+	   (mk=funtype ty1 (mk=funtype ty2 (mk=prodtype ty1 ty2)))))
+EXPR)
+
+(DEFPROP mkpair
+ (LAMBDA (t1 t2) (mkcomb (mkcomb (mkPAIR (CDDR t1) (CDDR t2)) t1) t2))
+EXPR)
+
+(DEFPROP destcond
+ (LAMBDA(t)
+  (PROG	(tr t1 t2)
+	(COND
+	 ((AND (iscomb t)
+	       (PROG2 (SETQ t2 (CDADR t)) (iscomb (SETQ t (CAADR t))))
+	       (PROG2 (SETQ t1 (CDADR t)) (iscomb (SETQ t (CAADR t))))
+	       (PROG2 (SETQ tr (CDADR t))
+		      (EQ (CADR (CAADR t)) (QUOTE COND))))
+	  (RETURN (CONS tr (CONS t1 t2)))))
+	(ERR (QUOTE destcond))))
+EXPR)
+
+(DEFPROP destpair
+ (LAMBDA(t)
+  (PROG	(t1 t2 ty)
+	(SETQ ty (CDDR t))
+	(COND ((NOT (isprodtype ty)) (ERR (QUOTE destpair)))
+	      ((isUU t) (SETQ ty (destprodtype ty))
+			(SETQ t1 (mkconst (QUOTE UU) (CAR ty)))
+			(SETQ t2 (mkconst (QUOTE UU) (CDR ty))))
+	      ((AND (iscomb t)
+		    (PROG2 (SETQ t2 (CDADR t))
+			   (iscomb (SETQ t (CAADR t))))
+		    (PROG2 (SETQ t1 (CDADR t))
+			   (EQ (CADR (CAADR t)) (QUOTE PAIR)))))
+	      ((ERR (QUOTE destpair))))
+	(RETURN (CONS t1 t2))))
+EXPR)
+
+(DEFPROP isUU
+ (LAMBDA (t) (EQ (CADR t) (QUOTE UU)))
+EXPR)
+
+(DEFPROP lhs
+ (LAMBDA(w)
+  (SELECTQ (CAR w) ((equiv inequiv) (CADR w)) (ERR (QUOTE lhs))))
+EXPR)
+
+(DEFPROP rhs
+ (LAMBDA(w)
+  (SELECTQ (CAR w) ((equiv inequiv) (CDDR w)) (ERR (QUOTE rhs))))
+EXPR)
+
+(DEFPROP mkfreethm
+ (LAMBDA (w) (CONS NIL w))
+EXPR)
+
+(DEFPROP eqtt
+ (LAMBDA (t) (mkequiv t (GET (QUOTE tt) (QUOTE MLVAL))))
+EXPR)
+
+(DEFPROP eqff
+ (LAMBDA (t) (mkequiv t (GET (QUOTE ff) (QUOTE MLVAL))))
+EXPR)
+
+(DEFPROP equu
+ (LAMBDA (t) (mkequiv t (GET (QUOTE uutr) (QUOTE MLVAL))))
+EXPR)

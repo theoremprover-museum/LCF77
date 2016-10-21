@@ -1,0 +1,22 @@
+
+(TML)
+
+newparent`LESYN` ;;
+
+newolinfix (`=`, ":IDEN # IDEN ->TR" ) ;;
+
+newconstant(`occne`, ":IDEN->NEXP->TR" ) ;;
+
+newconstant(`substne`, ":NEXP->IDEN->NEXP->NEXP") ;;
+
+map newaxiom[
+  `o1` , "occne i UU == UU" ;
+  `o2` , "occne i (mkncon n) == FF" ;
+  `o3` , "occne i (mkiden j) == i=j" ;
+  `o4` , "occne i (mkcnexp(nop,e1,e2)) == occne i e1=>TT|occne i e2" ;
+  `s1` , "substne d i UU == UU" ;
+  `s2` , "substne d i (mkncon n) == mkncon n" ;
+  `s3` , "substne d i (mkiden j) == (i=j)=>d|mkiden j" ;
+  `s4` , "substne d i (mkcnexp(nop,e1,e2)) ==
+             mkcnexp(nop, substne d i e1, substne d i e2)" ;
+  `e1` , "(i=i) == TT"] ;;

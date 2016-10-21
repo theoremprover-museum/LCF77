@@ -1,0 +1,850 @@
+COMMENT ⊗   VALID 00008 PAGES
+C REC  PAGE   DESCRIPTION
+C00001 00001
+C00002 00002	% Code for inserting stuff in simpsets. %
+C00015 00003	% The matching algorithm. %
+C00022 00004	% Simplification. %
+C00034 00005	% Substitution. %
+C00035 00006	% Mutation etc. %
+C00042 00007	% Miscellaneous.%
+C00046 00008	% Showing of and Deleting from  a Simpset. %
+C00050 ENDMK
+C⊗;
+% Code for inserting stuff in simpsets. %
+
+EXPR PUT1IN(RULE,SPECIAL STNO,SPECIAL DEP,SPECIAL ?!SS,ASS);
+% Insert a step or a theorem (RULE) into a simpset (!SS).The principal
+  connective of RULE is an equivalence operator.If RULE is a theorem
+  then STNO is its name (else it is the step number of the simprule)
+  and ASS is a list of atomic wffs that must  be proven before the 
+  theorem can be applied. DEP is a list of dependencies for RULE -
+  a list of steps (if RULE is a step) or a list of axioms (if RULE
+  is a theorem).							%
+% The left hand side is first linearised (after numericising the
+  universally quantified variables, the literal numbers and the
+  bound variables) so that it easy to insert in the simpset tree.  %
+% The most recent hack to the program is to enable conditional simp-
+  lification to be applicable to the case where a rule to be inserted
+  has relativization prefixes and is not a theorem. Such rules get
+  put in the simpset in usual form but also get put in as the rule
+  with the leading prefixes made into assumptions.
+	e.g.  ∀x.A(x)::B(x)≡C(x)  gets in as itself but also gets
+			 in as   A(X)≡TT |- B(X)≡C(X)
+  The second version of such rules is added by a nested call of PUT1IN.
+  The global variable MVBLS is used to hold the list of metavariables
+  for the nested call.							%
+BEGIN NEW L,R,L2,R2,LV,RV,AXFV,AV,W,X,Y,Z,PREF;
+    SPECIAL L2,R2,PREF;
+    IF CAR(RULE)≠'?≡ THEN ERR("CAN ONLY PUT EQUALITIES IN SIMPSET");
+
+    L ← CADR(RULE);
+    R ← CDDR(RULE);
+
+    % List the free variables that appear in assumptions.%
+    W ← NIL;
+    FOR X IN ASS DO
+    IF CAR(X)≠'?≡ THEN ERR("THEOREM ASSUMPTIONS NOT ≡ LINES")
+    ELSE W←FREES(CADR X) UNION (FREES(CDDR X) UNION W);
+
+    % List the variables that are free in the axioms on which RULE
+      depends (if it is a theorem).					%
+    IF ¬NUMBERP(STNO) THEN
+    AXFV ← <'TT, 'UU, 'FF> UNION
+	FOR NEW A IN DEP; UNION USEMNGX(A);
+
+    % Now check that each variable in the assumptions or on the right 
+      side is either free in the axioms on which the theorem depends or 
+      will be made a metavariable which will be bound by matching
+      the left hand side of RULE (i.e. appears free in L)	    %
+    X ← FREES(L);
+    IF ¬NUMBERP(STNO) THEN
+    FOR Y IN W UNION FREES(R) DO
+    IF ¬MEMBER(Y,AXFV) ∧ ¬MEMBER(Y,X) THEN  TERPRI(NIL) ALSO
+	PRINC('? ? ?*?*? ? WARNING? ? ?*?*? ? ? )   ALSO PRINC(Y)
+	ALSO   PRINC('? IS? FREE? IN? )   ALSO PRINC(STNO) 
+	ALSO   PRINC('? BUT? NOT? BINDABLE?.)   ALSO  TERPRI(NIL);
+
+    % If RULE is a theorem then the free variables which appear on
+      the left but not in the axioms become metavariables.%
+    IF ¬NUMBERP(STNO) THEN
+    FOR NEW A IN X DO
+	IF ¬MEMBER(A,AXFV) THEN AV← <A> CONS AV;
+
+    % Next identify the metavariables which arise from λ exprns.%
+    WHILE ¬ATOM(L)∧(CAR(L) EQ '?λ) ∧ ¬ATOM(R)∧(CAR(R) EQ '?λ) DO
+    BEGIN
+	LV ← <CADR(L)> CONS LV;
+	RV ← <CADR(R)> CONS RV;
+	L ← CDDR L;
+	R ← CDDR R;
+    END;
+
+    % Now, under favorable conditions, scan the relativization prefixes
+      and, if any, call PUT1IN recursively to put the conditional
+      simplification version in the simpset.				%
+    L2←L; R2←R;
+    IF NUMBERP(STNO)∧EQUAL(LV,RV)∧¬ASS THEN
+	WHILE  ¬ATOM(L2)∧(CAR(L2) EQ '??)∧¬ATOM(R2)∧(CAR(R2) EQ '??)
+	     ∧EQUAL(CADR L2,CADR R2)∧(CDDDR(L2) EQ 'UU)
+		∧(CDDDR(R2) EQ 'UU) DO
+	    BEGIN
+		PREF← ('?≡ CONS (CADR(L2) CONS 'TT)) CONS PREF;
+		L2 ← CADDR L2;
+		R2 ← CADDR R2;
+	    END
+	ALSO  MVBLS←LV 
+	ALSO IF PREF THEN
+	ERRSET(?!SS←PUT1IN( ('?≡ CONS CONS(L2,R2)), STNO,DEP,?!SS,PREF),T);
+
+    %If this is a nested call then  AV should be set from  MVBLS. %
+    IF ASS∧NUMBERP(STNO) THEN AV←MVBLS;
+
+    % Now give numbers to the metavariables while linearising L.%
+    LV ← LV@AV;
+    L ← LINEARISE(L,LV,<101>,NIL,301);
+    % The metavariable no. assignments list (LV) was probably changed
+      by the call on linearise. %
+
+    % Replace the metavariables mentioned in RV with something.%
+    X ← LV;			% Metavble assgts for LHS.%
+    Y ← RV;			% Metavbles of RHS.%
+    R ← MAPNUMS(R);		% Replace all numbers by suitable ints.%
+    IF ¬NULL(Y) THEN 
+    DO
+    BEGIN
+	IF Z←CDAR(X) THEN R←SUBSTFREE(CDAR(X),CAAR(Y),R)
+	ELSE ERR("I CANT HANDLE METAVARIABLES ON RHS ONLY");
+	X ← CDR X;
+	Y ← CDR Y;
+    END UNTIL NULL(Y);
+    %X contains substitutions for the metavbles. that are listed in AV.%
+
+    % Now substitute for the metavariables of AV.%
+    FOR Y IN X DO
+    R ← SUBSTFREE(CDR(Y),CAR(Y),R);
+    W ← NIL;
+    FOR Y IN ASS DO
+    BEGIN
+	Z ← MAPNUMS(CADR(Y)) CONS MAPNUMS(CDDR(Y));
+	FOR NEW A IN X DO
+	Z ← SUBSTFREE(CDR(A),CAR(A),CAR(Z))
+	    CONS SUBSTFREE(CDR(A),CAR(A),CDR(Z));
+	W ← Z CONS W;
+    END;
+    % The assumptions have been modified and are in W.%
+
+    RETURN(PUTX(?!SS,L,<R,STNO,(IF NUMBERP(STNO) THEN DEP ELSE NIL),W>));
+END;
+
+EXPR PUTX(PSS,L,LEAF);
+% PSS is a partial simpset tree, L is a partial left hand side of a
+  rule (linearised). The function returns PSS modified by the insertion
+  of LEAF at the appropriate leaf (possibly new) of the simpset tree. %
+BEGIN NEW L1,L2,L3,L4;
+    IF NULL(L) THEN RETURN (LEAF CONS PSS);
+	%In this case PSS was a list of leaves.%
+
+    IF ATOM(CAR PSS) ∧ (CAR(PSS)=CAR(L)) THEN
+	RETURN(CAR(PSS) CONS PUTX(CDR(PSS),CDR(L),LEAF));
+	%In this case we had a match where there was no branch.%
+
+    IF ATOM(CAR PSS) THEN
+	%We must create a branch.%
+	IF NUMBERP(CAR PSS) THEN
+	    IF LESSP(CAR(PSS),100) THEN
+		RETURN(PUTX(<<NIL,NIL,NIL,<PSS>>>,L,LEAF))
+	    ELSE
+	    IF LESSP(CAR(PSS),200) THEN
+		RETURN(PUTX(<<PSS,NIL,NIL,NIL>>,L,LEAF))
+	    ELSE
+	    IF LESSP(CAR(PSS),300) THEN
+		RETURN(PUTX(<<NIL,<PSS>,NIL,NIL>>,L,LEAF))
+	    ELSE RETURN(PUTX(<<NIL,NIL,<PSS>,NIL>>,L,LEAF))
+	ELSE RETURN(PUTX(<<NIL,NIL,<PSS>,NIL>>,L,LEAF));
+
+    L1 ← PSS[1,1];
+    L2 ← PSS[1,2];
+    L3 ← PSS[1,3];
+    L4 ← PSS[1,4];
+    % There is a branch at the start of PSS.%
+    IF NUMBERP(CAR L) THEN
+	IF LESSP(CAR(L),100) THEN
+	    RETURN(<<L1,L2,L3,PUTY(L,LEAF,L4,NIL)>>)
+	ELSE
+	IF LESSP(CAR(L),200) THEN
+	    RETURN(<<CAR(PUTY(L,LEAF,<L1>,NIL)),L2,L3,L4>>)
+	ELSE
+	IF LESSP(CAR(L),300) THEN
+	    RETURN(<<L1,PUTY(L,LEAF,L2,NIL),L3,L4>>);
+    RETURN(<<L1,L2,PUTY(L,LEAF,L3,NIL),L4>>);
+END;
+
+EXPR PUTY(L,LEAF,A1,A2);
+% Auxiliary function for PUTX.%
+IF NULL(A1) THEN (L@<LEAF>) CONS A2
+ELSE
+ IF CAAR(A1)≠CAR(L) THEN PUTY(L,LEAF,CDR(A1),CAR(A1) CONS A2)
+ ELSE
+  ((CAR(L) CONS PUTX(CDAR(A1),CDR(L),LEAF)) CONS A2) @ CDR(A1);
+
+EXPR LINEARISE(TERM,MVL,NMV,BVA,NBV);
+% Convert the term (TERM) from tree form to linear form numericising
+  numbers, bound variables (according to A-list BVA and next available
+  bound variable number NBV), operators and metavariables (according to
+  A-list MVL and next available metavariable number NMV).	       %
+BEGIN NEW X,Y;
+    IF NULL(TERM) THEN RETURN(<NIL>);
+    Y←CAR(NMV);
+    IF ATOM(TERM) THEN
+	IF X←ASSOC(TERM,BVA) THEN
+	    RETURN(<CDR X>)
+	ELSE
+	IF X←ASSOC(TERM,MVL) THEN
+	    IF CDR(X) THEN RETURN(<CDR X>)
+	    ELSE RPLACD(X,Y+100) ALSO RPLACA(NMV,Y+1)
+		ALSO RETURN(<Y>)
+	ELSE
+	IF NUMBERP(TERM) THEN
+	    RETURN(<MUTNUMBER(TERM)>)
+	ELSE RETURN(<TERM>);
+    %If control gets to here term is not an atom.%
+
+    X ← ASSOC(CAR(TERM),OPS);	% new name for operator (if it is one)%
+    IF NULL(X) THEN
+	RETURN(LINEARISE(CAR(TERM),MVL,NMV,BVA,NBV)
+	    APPEND LINEARISE(CDR(TERM),MVL,NMV,BVA,NBV));
+  
+    IF OPINFO1(CDR X) THEN
+    BEGIN
+	IF ¬LESSP(NBV,400) THEN ERR("TOO MANY BOUND VARIABLES ON LHS.");
+	Y ← (CADR(TERM) CONS NBV) CONS BVA;	%BV A-list for next level%
+	Y ← LINEARISE(CDDR(TERM),MVL,NMV,Y,NBV+1);
+	Y ← CDR(X) CONS (NBV CONS Y);
+    END
+    ELSE Y ← CDR(X) CONS LINEARISE(CDR(TERM),MVL,NMV,BVA,NBV);
+    RETURN(Y);
+END;
+% The matching algorithm. %
+
+EXPR MATCH(TERM,SS);
+% If the term (TERM) can be matched to the simpset tree (SS) then
+  return the stuff at the appropriate leaf with appropriate 
+  substitutions made for metavariables.%
+BEGIN NEW X;
+    MATCNT ← MATCNT+1;
+    BUST←NIL;	%A back up stack.%
+    IF TAGGED(TERM) THEN RETURN(NIL);
+    DO  X ← MAT1(TERM,SS)  UNTIL (¬NULL(X)∨NULL(BUST));
+    IF NULL(X) THEN RETURN(NIL);
+    X←FOR NEW Y IN X COLLECT
+    BEGIN NEW A,B,C;
+	A ← MAT0(CAR(Y));
+	B ← FOR C IN Y[4] COLLECT <MAT0(CAR C) CONS MAT0(CDR C)>;
+	RETURN( <<A,Y[2],Y[3],B>>);
+    END;
+    RETURN(X);
+END;
+
+
+EXPR MAT0(TERM);
+% Substitutes for metavariables in the term (TERM) the values given
+  in array BNDGS. %
+IF ATOM(TERM) THEN
+    IF NUMBERP(TERM)∧GREATERP(TERM,200)∧LESSP(TERM,300) THEN
+	BNDGS(TERM-100)
+    ELSE TERM
+ELSE MAT0(CAR TERM) CONS MAT0(CDR TERM);
+
+
+
+EXPR MAT1(ST,PSS);
+% Auxiliary function for MATCH. The subterm (ST) is to be matched to
+  the partial simpset (PSS) consistently with the list of bindings
+  of previously encountered metavariables and the array (BCV) of
+  correspondences between bound variables. The values bound to 
+  metavariables are in array BNDGS.
+  The result of MAT1 is the new (pruned) partial simpset if the  match
+  was successful but NIL if a match could not be made.			%
+% The back-up stack (BUST) is used to effect backup to decision points 
+  in the algorithm. When a decision is made in MAT1 then the current
+  value of PSS is put in BUST together with a list of the untried 
+  possibilities. If MAT1 is entered with a value for PSS which matches
+  the one on the top of BUST then the next possible pruning of PSS is
+  tried. 	%
+
+IF ¬ATOM(ST)∧¬(NUMBERP(CAR ST)∧LESSP(CAR ST,100)) THEN
+BEGIN NEW X,Y,Z,FLAG;
+    Z ← BUST;
+L1; X←MAT1(CAR ST,PSS);
+    IF NULL(X) THEN RETURN(NIL);
+    FLAG ← ¬(BUST EQ Z) ∧ BUST;
+    Y←MAT1(CDR ST,X);
+    IF Y ∨ ¬FLAG THEN RETURN(Y);
+    GO L1;
+END
+ELSE
+IF ATOM(CAR PSS) THEN
+BEGIN NEW X,Y;
+    X ← CAR PSS;		%The leading symbol of the partial
+				 simpset tree (no branching here). %
+    IF ¬NUMBERP(X) ∨ GREATERP(X,400) THEN
+	%In this case we have a symbol to be matched which is not
+	 an operator, not a metavariable and not a bound variable.%
+	IF ST EQ X THEN RETURN(CDR PSS)
+	ELSE RETURN(NIL);
+
+    IF LESSP(X,100) THEN
+	IF ATOM(ST) ∨ ¬NUMBERP(CAR ST) ∨ (ABS(CAR ST)≠X) THEN
+	    RETURN(NIL)
+	ELSE	%we have an operator match%
+	IF OPINFO1(X) THEN
+	    BCV(CADR(PSS))←CADR(ST)
+	    ALSO RETURN(MAT1(CDDR ST,CDDR PSS))
+	ELSE RETURN(MAT1(CDR ST,CDR PSS));
+
+    IF LESSP(X,200) THEN
+	%in this case X is a first occurrence of a metavariable.%
+	BNDGS(X)←ST
+	ALSO RETURN(CDR PSS);
+
+    IF LESSP(X,300) THEN
+	%In this case X is a later occurrence of a metavariable.%
+	IF Y←TAGEQUAL(BNDGS(X-100),ST,NIL,NIL) THEN
+	    BNDGS(X-100)←CAR Y
+	    ALSO RETURN(CDR PSS)
+	ELSE RETURN(NIL);
+
+    %The only other possibility for X is that it is a bound vble.%
+    IF BCV(X) EQ ST THEN RETURN(CDR PSS)
+    ELSE RETURN(NIL);
+END
+ELSE
+BEGIN NEW Z,FLAG,B1;
+    IF BUST∧(CAAR(BUST) EQ PSS) THEN FLAG←T
+    ELSE
+    IF ATOM(ST) THEN IF Z←ASSOC(ST,PSS[1,3]) THEN Z←CDR(Z) ELSE NIL
+	%If ST is an atom then dont consider the operator branch.%
+    ELSE IF Z←ASSOC(ABS(CAR ST),PSS[1,4]) THEN Z←MAT1(ST,Z);
+	%Otherwise dont consider the atom branch.%
+	%If we get a match then backup.%
+    IF ¬FLAG THEN 
+	BEGIN NEW X,Y,TET;
+	    FOR X IN PSS[1,2] DO
+	    IF TET←TAGEQUAL(ST,BNDGS(CAR(X)-100),NIL,NIL) THEN
+		BNDGS(CAR(X)-100)←CAR(TET)
+		ALSO Y←X CONS Y;
+	    Y←<PSS[1,1],Y>;
+	    IF Y ≠ <NIL,NIL> THEN
+		BUST ← <PSS,Y> CONS BUST
+		ALSO FLAG←T;
+	END;
+    IF Z THEN RETURN(Z);	
+    IF ¬FLAG THEN RETURN(NIL);
+    %At this point we can match the new metavariable option in the
+     partial simpset (if there is one) or one of the assigned 
+     metavariable options (if there are any). In any case the options
+     are defined by the first element of BUST.  %
+    B1 ← BUST[1,2]; BUST ← CDR(BUST);
+    IF ¬NULL(B1[2]) THEN Z←CAR(B1[2]) ALSO B1←<CAR(B1), CDR(B1[2])>
+	ELSE Z←CAR(B1) ALSO B1←<NIL,NIL> ALSO BNDGS(CAR(Z))←ST;
+    IF B1≠<NIL,NIL> THEN BUST ←<PSS,B1> CONS BUST;
+    RETURN CDR(Z);
+END;
+% Simplification. %
+
+EXPR SIMPLIFY1(Z,SS); %Simplify a term or a wff relative to simpset SS.
+	 For format of Z see the call in the SIMPLIFY `LET' of LCFA. %
+IF Z[1] EQ 2 THEN 
+    BEGIN NEW X; X←TERMSIMPL(Z[2],SS);
+	RETURN(CAR(X) CONS <'?≡ CONS Z[2] CONS CADR(X)> CONS CDDR(X));
+    END
+ELSE BEGIN NEW ST,WFF,DEP;
+	DEP ← CDR(Z[2]);
+	FOR NEW X IN CAR(Z[2]) DO
+	BEGIN NEW Y; Y←AWFFSIMPL(X,SS);
+		ST ← ST UNION CAR Y;
+		WFF ← CADR(Y) CONS WFF;
+		DEP ←DEP UNION CDDR Y;
+	END;
+	RETURN( ST CONS REVERSE(WFF) CONS DEP);
+     END;
+
+
+
+EXPR AWFFSIMPL(AWFF,SS);
+BEGIN NEW X,Y,ST,AWFF2,DEP;
+    X←TERMSIMPL(CADR AWFF,SS);
+    Y←TERMSIMPL(CDDR AWFF,SS);
+    ST ← CAR(X) UNION CAR(Y);
+    AWFF2 ← CAR(AWFF) CONS (CADR(X) CONS CADR(Y));
+    DEP ← CDDR(X) UNION CDDR(Y);
+    RETURN( ST CONS (AWFF2 CONS DEP));
+END;
+
+
+
+EXPR TERMSIMPL(TERM,SS);
+%Simplify a term using the simplification rules in the simpset(SS).%
+BEGIN NEW X;
+    NXTBVI ← 1001;		%The integer to be assigned the
+				 next time a bound variable is
+				 numericised. %
+    X ← MAPNUMS(TERM);		% Rename all numbers suitably.%
+    X ← MUTATE2(X);	    	%Mutation involves rewriting the 
+				 term to a form more suitable for 
+				 the simplification routine.	%
+    X ← CDR(SIM(X,SS,NIL));	%Simplify the mutated term as much
+				 as possible (no backup). %
+    RETURN( (CAR X) CONS ( UNMUTATE(CADR X) CONS CDDR X));
+				%Remove all tags and Un-Mutate the
+				 simplified term. %
+END;
+
+
+
+
+
+EXPR SIM(TERM, SS, BACKUP);
+% If backup is not required (BACKUP=NIL) then simplify term TERM as
+  much as possible returning the simplified term which will be 
+  tagged as maximally simplified (unless it is an atom).
+  Otherwise (BACKUP=T), transform TERM until a succesful sequence
+  of simplifications occurs at the current level; then exit
+  with the transformed term as a result. The result will be marked
+  if appropriate.
+  The simpset to be used is SS.
+  The exact form of the result of SIM is  
+	α .(<steps used> . (<simplified term> . <dependency list>))
+  where α is T if simplification or tagging occurred else NIL.	   %
+BEGIN NEW T1, T2, FLAG1,FLAG2,FLAG3, STEPLIST, DEPENDENCIES;
+    T1 ← TERM;
+L;  FLAG3←T;
+    FLAG1←NIL;		% No matches this time around (yet).%
+    WHILE (T2←MATCH(T1,SS))∧FLAG3 DO
+    %note that if T1 tagged, match fails%
+    BEGIN NEW FLAG4;
+	%FLAG3 will be set when a replacement is done in this block%
+	%FLAG4 is will be set if the assumptions of a theorem do
+	 not simplify to an identity.%
+	FLAG3←NIL;
+	FOR NEW X IN T2 DO
+	IF CAR(X) EQ 0 THEN T1←LAMCVT(T1) ALSO FLAG3←T
+	ELSE
+	BEGIN NEW A,B,C,D,E,F;
+	    FLAG4 ← NIL;
+	    IF ¬NULL(X[4]) ∧ ¬LESSP(THMDEPTH,0) THEN
+		THMDEPTH ← THMDEPTH-1 ALSO
+		BEGIN
+		    FOR A IN X[4] DO
+		    IF ¬FLAG4 THEN
+		    BEGIN
+			B ← NXTBVI;
+			C ← CDR(SIM(MUTATE2(CAR A),SS,NIL));
+			D ← CDR(SIM(MUTATE2(CDR A),SS,NIL));
+			IF NULL(TAGEQUAL(CADR(C),CADR(D),NIL,NIL)) 
+				THEN FLAG4 ← T
+			ELSE E←CAR(C) UNION (CAR(D) UNION E)
+			     ALSO F←CDDR(C) UNION (CDDR(D) UNION F);
+			NXTBVI ← B;
+		    END
+		END ALSO
+		THMDEPTH ← THMDEPTH +1;
+	    IF NULL(X[4]) ∨ ¬LESSP(THMDEPTH,0)∧¬FLAG4  THEN
+	    BEGIN
+		SIMCNT ← SIMCNT+1;
+		T1 ← MUTATE2(CAR X);
+		STEPLIST ← STEPLIST UNION <X[2]> UNION E;
+		DEPENDENCIES ← DEPENDENCIES UNION X[3] UNION F;
+		FLAG3←T;
+	    END;
+	END UNTIL FLAG3;
+	IF FLAG3 THEN FLAG1←T;
+    END;
+    % If FLAG1 is set then at least one match was successful at
+      this level (this time around the main loop of SIM). %
+    IF (BACKUP∧FLAG1) ∨ ATOM(T1) ∨ TAGGED(T1) THEN
+	RETURN( FLAG1 CONS (STEPLIST CONS (T1 CONS DEPENDENCIES)));
+
+    % If FLAG2 is set then the last time around the loop it was
+      noticed that all the subterms were tagged. Thus if there was
+      no match possible at this level we may tag the term and exit.%
+    IF FLAG2 ∧ ¬FLAG1 THEN
+	RETURN( T CONS (STEPLIST CONS (TAG(T1) CONS DEPENDENCIES)));
+    FLAG2 ← NIL;
+
+    IF OPINFO1(CAR T1) THEN
+    BEGIN NEW X;
+	X ← SIM2(CDDR T1, SS);
+	FLAG2 ← CAR X;
+	STEPLIST ← STEPLIST UNION CADR(X);
+	T1 ← CAR(T1) CONS (CADR(T1) CONS CADDR(X));
+	DEPENDENCIES ← DEPENDENCIES UNION CDDDR(X);
+    END
+    ELSE
+    BEGIN NEW X;
+	X ← SIM2(CDR T1, SS);
+	FLAG2 ← CAR X;
+	STEPLIST ← STEPLIST UNION CADR(X);
+	T1 ← CAR(T1) CONS CADDR(X);
+	DEPENDENCIES ← DEPENDENCIES UNION CDDDR(X);
+    END;
+    GO(L);
+END;
+
+
+EXPR SIM2(STERM,SS);
+%Auxiliary function for SIM. Result format is  <α1 α2 α3 . α4>  where
+ 	α1 indicates all subterms are tagged or atoms;
+	α2 list of steps used;
+	α3 simplified form of STERM;
+	α4 list of dependencies;				%
+IF ATOM(STERM) ∨ (NUMBERP(CAR STERM)∧LESSP(CAR(STERM),100)) THEN
+BEGIN NEW X;
+    X ← CDR(SIM(STERM,SS,T));
+    IF ATOM(CADR X) ∨ TAGGED(CADR X) THEN
+	RETURN(T CONS X)
+    ELSE RETURN(NIL CONS X);
+END
+ELSE
+BEGIN NEW X,Y,Z1,Z2,Z3;
+    X ← SIM(CAR STERM,SS,T);
+    IF CAR(X) THEN
+	Y ← CDDR(X) ALSO Z1←((CAR(Y) CONS CDR(STERM)) CONS CDR(Y))
+	ALSO RETURN(NIL CONS (X[2] CONS Z1))
+    ELSE X←CDR(X);
+    Y ← SIM2(CDR STERM,SS);
+    Z1 ← CAR(X) UNION CADR(Y);		%Step numbers%
+    Z2 ← CDDR(X) UNION CDDDR(Y);	%Dependencies%
+    Z3 ← CADR(X) CONS CADDR(Y); 	%Simplified subterm.%
+    IF (CAR Y) ∧ (ATOM(CAR Z3)∨TAGGED(CAR Z3)) THEN
+	RETURN (T CONS (Z1 CONS (Z3 CONS Z2)))
+    ELSE RETURN (NIL CONS (Z1 CONS (Z3 CONS Z2)));
+END;
+
+
+EXPR LAMCVT(TERM);
+% Do lambda conversion on term (TERM) wherein the principal operator
+  is application and the first subterm is a lambda expression.%
+BEGIN NEW LAMV,LAMB,LAMA,X,Y;
+    LAMV ← TERM[2,2];		% The lambda exprn. bnd. variable.%
+    LAMB ← CDDR(TERM[2]);	% The lambda exprn. body.%
+    LAMA ← CDDR(TERM);		% The lambda exprn. argument.%
+    X ← <NIL>;
+    LAM1(X,LAMA);		% List all bound variables in arument.%
+    Y ← <NIL>;
+    LAM2(X,Y,LAMB);		% List all bound variables in body that
+				  are also in argument .%
+    LAMA ← LAM3(
+	(FOR NEW A IN CAR(Y) COLLECT <A CONS MUTBNDVAR(A)>),LAMA);
+				% That renamed all bound variables of
+				  arg which appear in body.%
+    X ← SUBSTFREE(LAMA,LAMV,LAMB);
+    RETURN(X);
+END;
+
+
+
+EXPR LAM1(LL,TERM);
+% Aux. fn. for LAMCVT. Collects bound variable occurrences in TERM.%
+IF ATOM(TERM) THEN NIL 
+ELSE
+BEGIN NEW X;
+    X ← CAR TERM;
+    IF ¬ATOM(X) ∨ ¬NUMBERP(X) ∨ ¬LESSP(X,100) THEN
+	RETURN( LAM1(LL,CAR TERM) CONS LAM1(LL,CDR TERM));
+    X ← ABS(X);
+    IF OPINFO1(X) ∧ ¬MEMQ(CADR(TERM),CAR(LL)) THEN
+	RPLACA(LL,CADR(TERM) CONS CAR(LL));
+    RETURN(LAM1(LL,CDR TERM));
+END;
+
+EXPR LAM2(LL1,LL2,TERM);
+% Aux. fn. for LAMCVT. Collects bound variable occurrences in TERM 
+  which are also in LL1[1] and puts them in LL2[1].	%
+IF ATOM(TERM) THEN NIL 
+ELSE
+BEGIN NEW X;
+    X ← CAR TERM;
+    IF ¬ATOM(X) ∨ ¬NUMBERP(X) ∨ ¬LESSP(X,100) THEN
+	RETURN( LAM2(LL1,LL2,CAR TERM) CONS LAM2(LL1,LL2,CDR TERM));
+    X ← ABS(X);
+    IF OPINFO1(X) ∧ ¬MEMQ(CADR(TERM),CAR(LL2))
+		    ∧ MEMQ(CADR(TERM),CAR(LL1)) THEN
+	RPLACA(LL2,CADR(TERM) CONS CAR(LL2));
+    RETURN(LAM2(LL1,LL2,CDR TERM));
+END;
+
+
+EXPR LAM3(ALIST,TERM);
+% Auxiliary function for LAMCVT. Does substitutions (of bound vars.)
+  in term (TERM) according to the A-list (ALIST).		    %
+BEGIN NEW X;
+    IF ATOM(TERM) THEN
+	IF (X←ASSOC(TERM,ALIST)) THEN
+	    RETURN(CDR X)
+	ELSE RETURN(TERM)
+    ELSE RETURN(LAM3(ALIST,CAR TERM) CONS LAM3(ALIST,CDR TERM))
+END;
+
+% Substitution. %
+EXPR SUBS1(L,N,Z);
+BEGIN NEW F,A;
+    A←CAAR L;
+    IF N THEN N←N[2]ALSO F←<0>
+    ELSE F←<NIL>;
+    RETURN IF Z[1] EQ 2
+		THEN <CAR A CONS Z[2]CONS 
+		SIMP1(CDDR A,CADR A,MUTATE(Z[2],FREES(A)),F,N)>
+			CONS CDR(L)
+	   ELSE
+	   IF CAR A ≠'?≡ THEN ERR('NASTYSUBST )
+	   ELSE SIMP1(CDDR A,CADR A,MUTATE(CAR(Z[2]),FREES(A)),F,N)
+		CONS(CDR L UNION CDR(Z[2]))
+END;
+
+% Mutation etc. %
+
+EXPR MAPNUMS(TERM);
+% Rename all numbers in a term (TERM) to integers in the range
+  (401:1000) and leave a record of the change in NUMMUT,NUMMUT2.%
+IF ATOM(TERM) THEN
+    IF NUMBERP(TERM) THEN MUTNUMBER(TERM)
+    ELSE TERM
+ELSE MAPNUMS(CAR TERM) CONS MAPNUMS(CDR TERM);
+
+EXPR MUTNUMBER(N);
+% Mutate a number.%
+BEGIN NEW X,Y;
+    IF X←ASSOC(N,NUMMUT) THEN RETURN(CDR X)
+    ELSE 
+    IF X←ASSOC2(N,NUMMUT) THEN RETURN(CDR X)
+    ELSE 
+    BEGIN
+	IF (NXTNUMI+1) GREATERP 1000 THEN ERR("TOO MANY NUMBERS");
+	Y ← NXTNUMI;
+	NXTNUMI ← NXTNUMI+1;
+	NUMMUT ← (N CONS Y) CONS NUMMUT;
+	NUMMUT2 ← (Y CONS N) CONS NUMMUT2;
+    END;
+    RETURN(Y);
+END;
+
+EXPR MUTATE2(TERM);
+%Mutation of a term(TERM) involves:-
+	i)  renaming bound variables in TERM to integers above 1000;
+	ii) renaming the operators (α,λ,etc) to integers in
+	    the (1:100) range according to an A-list (OPS).	%
+MUT1X(TERM,NIL);
+
+EXPR MUT1X(TERM,A);
+% Auxiliary function for MUTATE (see above). TERM is a subterm to be
+  mutated and A is an A-list of bound variable renamings that have 
+  already been decided upon.
+  When a bound variable is encountered for the first time the value
+  it will be mutated to is given by the global variable NXTBVI. Record
+  of these mutations are kept in the array  BVMUT.
+  The maximum values for the pointer for BVMUT is BVMAX. If NXTBVI 
+  gets above BVMAX then no record is kept of the mutation so that the
+  function UNMUTATE will have to invent an identifier.%
+
+BEGIN NEW RSLT,X,Z;
+    IF ATOM(TERM) THEN
+	IF NULL(TERM) ∨ NUMBERP(TERM) THEN RETURN(TERM)
+	ELSE
+	IF X←ASSOC(TERM,A) THEN RETURN(CDR X)
+	ELSE RETURN(TERM);
+
+    X ← ASSOC(CAR TERM,OPS);	% new name for operator (if it is one)%
+    IF NULL(X) THEN RETURN(MUT1X(CAR TERM,A) CONS MUT1X(CDR TERM,A));
+
+    RSLT ← CDR X;		%Numeric name for operator%
+    IF OPINFO1(RSLT) THEN 
+    %The operator is one which is always followed by a bound variable.%
+	X ← (CADR TERM CONS (Z←MUTBNDVAR(CADR TERM))) CONS A
+	ALSO RSLT ← RSLT CONS (Z CONS MUT1X(CDDR TERM,X))
+    ELSE RSLT← RSLT CONS MUT1X(CDR TERM,A);
+    RETURN(RSLT);
+END;
+
+EXPR MUTBNDVAR(V);
+% Mutate a bound variable.%
+BEGIN
+    IF LESSP(NXTBVI,BVMAX) THEN
+	BVMUT(NXTBVI) ← V;
+    NXTBVI ← NXTBVI+1;
+    RETURN(NXTBVI-1);
+END;
+
+EXPR ASSOC2(X,Y);
+IF NULL(Y) THEN NIL
+ELSE IF X EQUAL CAAR(Y) THEN CAR(Y)
+     ELSE ASSOC2(X,CDR(Y));
+
+EXPR UNMUTATE(TERM);
+% Undo all numericisation in the term (TERM).
+	i)   bound variables will be numeric but the original forms
+	     are accessible via array BVMUT;
+	ii)  numbers were replaced by integers in the 400:1000 
+	     range; record of the change is in NUMMUT;
+	iii) the numeric forms of the operators will be replaced by
+	     the readable forms.				    %
+
+UNMUT1(TERM,NIL,IDENTS(TERM));
+
+EXPR UNMUT1(STERM,AL,BVL);
+%Auxiliary function for UNMUTATE. BVL is a list of the non-numeric bound
+ variable names already used together with the free variables that appear
+ in the term of which STERM is a subterm. AL is an A-list giving the
+ correspondences between numeric bnd. vble. names and the corresponding
+ non-numeric forms (for bnd. vbles. that have already been encountered).%
+BEGIN NEW X,Y;
+    IF ATOM(STERM) THEN
+	IF ¬NUMBERP(STERM) THEN RETURN(STERM)
+	ELSE   %At this point STERM can represent a number (whence its
+		range will be 400:1000) or a bound variable (1000 up).%
+	IF LESSP(STERM,1000) THEN RETURN(CDR(ASSOC(STERM,NUMMUT2)))
+	ELSE RETURN(CDR(ASSOC(STERM,AL)));
+    IF ¬(NUMBERP(CAR STERM)) ∨ GREATERP(CAR(STERM),100) THEN 
+	RETURN(UNMUT1(CAR STERM,AL,BVL) CONS UNMUT1(CDR STERM,AL,BVL));
+    X ← ABS(CAR STERM);		%The principal operator of the subterm.%
+    IF ¬(OPINFO1(X)) THEN 
+	RETURN( OPINFO3(X) CONS UNMUT1(CDR STERM,AL,BVL));
+    Y ← CADR STERM;
+    IF GREATERP(Y,BVMAX-2) THEN 
+	Y ← 'x
+    ELSE WHILE NUMBERP(Y) DO Y ← BVMUT(Y);
+    Y ← BETTER(Y,BVL);
+    RETURN(OPINFO3(X) CONS (Y CONS 
+	UNMUT1(CDDR STERM, (CADR(STERM) CONS Y) CONS AL, Y CONS BVL)));
+END;
+% Miscellaneous.%
+
+EXPR TAG(TERM);
+% This routine ensures that the principal operator of term (TERM) is
+  tagged (if there is one) %
+IF ATOM(TERM) ∨ LESSP(CAR TERM, 0)
+    THEN TERM			 %No operator or already tagged.%
+ELSE RPLACA(TERM,MINUS(CAR TERM));
+
+EXPR TAGGED(TERM);
+% This function returns T iff the principal operator of the term (TERM)
+  is tagged (i.e. negative).				%
+IF ATOM(TERM) ∨ ¬ATOM(CAR TERM) ∨ ¬NUMBERP(CAR TERM) THEN NIL
+    ELSE LESSP(CAR TERM, 0);
+
+EXPR TAGEQUAL(T1,T2,L1,L2);
+%Compares 2 terms (T1 & T2) for equality modulo any tags that might 
+ occur in either term and modulo correspondences between the bound
+ variables that occur within or more globally where the correspondence
+ is given by the A-lists L1 and L2.					      %
+%If the terms are so equal then <T1> is returned with any extra tags
+ that might be indicated by T2. Otherwise the result is NIL.	      %
+BEGIN NEW X,Y,Z;
+    IF ATOM(T1) ∧ ATOM(T2) THEN 
+ 	IF ¬NUMBERP(T1) ∧ (T1 = T2) THEN RETURN(<T1>)
+	ELSE IF CORRESP(T1,T2,L1,L2) THEN RETURN(<T1>);
+    IF ATOM(T1) ∨ ATOM(T2) THEN RETURN(NIL);
+    IF ¬NUMBERP(CAR T1) THEN
+	IF NUMBERP(CAR T2) THEN RETURN(NIL)
+	ELSE RETURN(IF (X←TAGEQUAL(CAR T1,CAR T2,L1,L2))
+			 ∧ (Y←TAGEQUAL(CDR T1,CDR T2,L1,L2)) 
+			THEN <CAR(X) CONS CAR(Y)>
+		    ELSE NIL);
+    IF ¬NUMBERP(CAR T2) THEN RETURN(NIL);
+    IF ABS(CAR T1) ≠ ABS(CAR T2) THEN RETURN NIL;
+    %At this point we know that T1 & T2 both have the same princ. op. %
+    X ← IF LESSP(CAR T1,CAR T2) THEN CAR(T1) ELSE CAR(T2);
+    Y ← OPINFO1(ABS(X));	% Indication of bound variable next. %
+    Z ← GENSYM();   %If Y then we need this for stating correspondence%
+    IF Y THEN 
+	IF Y ← TAGEQUAL(CDDR T1,CDDR T2,(CADR T1 CONS Z) CONS L1,
+					 (CADR T2 CONS Z) CONS L2) THEN
+	    RETURN(<X CONS (CADR(T1) CONS CAR(Y))>)
+	ELSE RETURN(NIL);
+    Y ← TAGEQUAL(CDR T1, CDR T2, L1,L2);
+    IF Y THEN RETURN(<X CONS CAR(Y)>)
+    ELSE RETURN(NIL);
+END;
+
+EXPR IDENTS(TERM);
+% Collects the identifiers of a mutated term.%
+IF ATOM(TERM) THEN 
+    IF NUMBERP(TERM) THEN NIL
+    ELSE <TERM>
+ELSE IDENTS(CAR TERM) UNION IDENTS(CDR TERM);
+% Showing of and Deleting from  a Simpset. %
+
+EXPR MAPLEAVES(SS,LFFN,LFFNARG2);
+%Copy simpset SS mapping leaves by function LFFN which takes as args
+ a leaf and LFFNARG2.%
+MAPL1(0,SS,LFFN,LFFNARG2);
+
+EXPR MAPL1(TERMDEPTH,PSS,LFFN,LFFNARG2);
+IF LESSP(TERMDEPTH,0) THEN LFFN(PSS,LFFNARG2)
+ELSE
+IF ATOM CAR(PSS) THEN
+BEGIN NEW X;
+    X←CAR(PSS);
+    IF NUMBERP(X)∧LESSP(X,100) THEN
+	RETURN (X CONS MAPL1(TERMDEPTH-(IF OPINFO1(X) THEN 0 ELSE 1)
+		+OPINFO2(X), CDR(PSS), LFFN, LFFNARG2));
+    RETURN (X CONS MAPL1(TERMDEPTH-1, CDR(PSS), LFFN, LFFNARG2));
+END
+ELSE
+    <<(IF NULL(CAAR PSS) THEN NIL
+	ELSE MAPL1(TERMDEPTH, PSS[1,1], LFFN, LFFNARG2) ),
+      MAPL2(TERMDEPTH, PSS[1,2], LFFN, LFFNARG2),
+      MAPL2(TERMDEPTH, PSS[1,3], LFFN, LFFNARG2),
+      MAPL2(TERMDEPTH, PSS[1,4], LFFN, LFFNARG2)>>;
+
+EXPR MAPL2(TERMDEPTH,PSSX, LFFN, LFFNARG2);
+BEGIN NEW Y;
+    FOR NEW X IN PSSX DO
+    Y ← MAPL1(TERMDEPTH,X,LFFN,LFFNARG2) CONS Y;
+    RETURN REVERSE(Y);
+END;
+
+EXPR TAKE1OUT(LN,SS);
+TAKENOUT(<LN>,SS);
+
+EXPR TAKENOUT(LNLST,SS);
+MAPLEAVES(SS,FUNCTION TOF,LNLST);
+
+EXPR TOF(LEAF,LNLST);
+BEGIN NEW X,Y;
+    FOR X IN LEAF DO
+    IF CADR(X) MEMQ LNLST THEN NIL
+    ELSE Y←X CONS Y;
+    RETURN REVERSE(Y);
+END;
+
+
+EXPR SHOWSIMPSET(SS,NF,NL);
+%SHOW NUMBERED STEPS IN THE SIMPSET IN THE RANGE NF:NL  %
+%ASSUME THAT IF NL=THISLINE+1 THEN THEOREMS ARE REQUIRED.%
+BEGIN NEW X;
+    X ← <NIL>;
+    MAPLEAVES(SS,FUNCTION SHS1, X);
+    FOR NEW Y IN CAR(X) DO
+    IF (NUMBERP(Y) ∧ ¬(Y LESSP NF) ∧ ¬(Y GREATERP NL) ) THEN
+    BEGIN NEW Z;
+	LINES(1);
+	PRINC Y; Z←LINEOF(Y);
+	PRINTWFF(CAR(Z));
+	SPACES(3);
+	IF CDR(Z) THEN PRINC CDR(Z);
+    END
+    ELSE
+    IF ¬NUMBERP(Y) ∧ (NL EQ (THISLINE+1)) THEN
+	PRINTTHEOREM1(LKUPTHM(Y));
+END;
+
+EXPR SHS1(LEAF,LNLST);
+BEGIN NEW X,Y;
+    FOR X IN LEAF DO
+    IF ¬NULL(CADR(X)) THEN
+    RPLACA(LNLST, <CADR(X)> UNION CAR(LNLST));
+    RETURN LEAF;
+END;
+
+_EOF_

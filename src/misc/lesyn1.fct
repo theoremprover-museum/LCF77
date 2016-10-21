@@ -1,0 +1,7 @@
+
+sub1  "!d:NEXP. !e:NEXP. !i:IDEN. occne i e == FF IMP substne d i e == e"
+
+sub2  "!i':IDEN. !d':NEXP. !d:NEXP. !e:NEXP. !i:IDEN. occne i e == FF IMP substne d i(substne d' i' e) == substn~
+e(substne d i d')i' e"
+
+rather boring theorem  "!i:IDEN. !e:NEXP. !d:NEXP. occne i e == FF IMP substne d i e == e"

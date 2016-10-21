@@ -1,0 +1,211 @@
+(TML)
+%all tactics needed in list stack problem, for new system%
+letrec fillup fl n default =
+   not (length fl < n) => fl |
+   fillup (fl @ [default])  (n-1) default;;
+
+let shape xl = map length xl;;
+
+
+letrec apresp fl xl default =
+null xl => nil |
+   let fl' = (length fl > length xl) =>
+                  fst (chop ((length xl), fl)) |
+                  (length fl < length xl) =>
+                  fillup fl (length xl) default |
+                  fl
+        in ((hd fl') (hd xl)).(apresp (tl fl')(tl xl) default);;
+
+let THENL (tac:tactic) (tacl:tactic list) g =
+   let gl,p = tac g
+   in let gll,pl = split (apresp tacl gl IDTAC)
+      in flat gll, p o mapshape (shape gll) pl;;
+
+letrec SPECL th varlist =
+   let conc = concl th
+   in isquant conc =>
+   let var = fst (destquant conc)
+   in SPECL (SPEC var th) (var . varlist) |
+   (varlist,th);;
+
+% |- !xn ... !x1.w  , []        to      [x1 ... xn], |- w      %
+
+letrec GENL l th = null l => th | GENL (tl l) (GEN (hd l) th);;
+
+% [xn ... x1], |-w              to      |- !x1 ... !xn.w      %
+
+letrec destcons2 firstpart  l = null l => fail |
+                     null (tl l) => (firstpart, hd l) |
+                     destcons2 (firstpart @ [hd l]) (tl l);;
+
+%     [e1; ... ;en]     to [e1; ... ;en-1],en      %
+
+let EXTL th =
+   isquant (concl th) =>
+   let varlist,th' = SPECL th nil
+   in let  restofvars,lastvar =  destcons2 nil varlist
+      in GENL restofvars (EXT (GEN lastvar th')) |
+      th;;
+
+%            |- !x1 ... !xn. P xn ... x1 =< Q xn ... x1
+             - - - - - - - - - - - - - - - - - - - - - -
+             |- !x2 ... !xn. P xn ... x2 =< Q xn ... x2          %
+
+
+let WEAKFIXRULE th1 th2 =
+   let funG = snd (destcomb (rhs (concl th1)))
+   and F1 = rhs (concl th2)
+   in let f = mkvar (gentok(),typeof F1)
+      in let w = "↑f << ↑F1"
+         and basis = MIN F1
+         in let step = TRANS (APTERM funG (ASSUME w), th2)
+            in let concl = INDUCT [funG, f] w (basis,step)
+               in SUBS [SYM th1] concl;;
+
+%     ...|- G == FIX funG        ...|- funG F1 << F1
+     - - - - - - - - - - - - - - - - - - - - - - - - 
+                ...|- G << F1                             %
+let WEAKFIXTAC th ((w,ss,fml):goal) =
+   let funG = snd (destcomb (rhs (concl th)))
+   and F1 = rhs w
+   in ([mkinequiv (mkcomb (funG, F1), F1), ss, fml],
+       WEAKFIXRULE th o hd);;
+
+% takes a goal of the form   ("G << FF", ss, fml)
+                   and a thm |- G == FIX funG
+
+  and produces a subgoal of form ("funG FF << FF", ss, fml)    %
+
+
+letrec takeapart (l, w) =
+   isquant w => let c,d = destquant w in
+                takeapart (c.l, d) | 
+   isequiv w => (l,(true,destequiv w)) |
+   isinequiv w => (l,(false,destinequiv w)) | fail;;
+
+letrec mkquantl l w =
+   null l => w | mkquantl (tl l) (mkquant ((hd l),w));;
+
+let APPLYTAC2 ((w,ss,fml):goal) =
+let varlist,b,F,G = takeapart (nil,w) 
+in let x = mkvar (gentok (),fst (destfuntype (typeof F)))
+   in let w' = b=> (mkquant (x,(mkquantl varlist
+                   (mkequiv (mkcomb (F,x),mkcomb(G,x)))))) |
+                   (mkquant (x,(mkquantl varlist
+                   (mkinequiv (mkcomb (F,x),mkcomb(G,x))))))
+      in ([w',ss,fml],(EXTL o hd));;
+
+% takes a goal of the form  "F =< G" or "!x.F x =< G x"
+  where "F:*->**" or "F:*->**->***" resp.
+  and produces a subgoal of the form "!x.F x =< G x" or
+  "!y.!x.F x y =< G x y" resp.                           %
+
+
+let UNWINDTAC th ((w,ss,fml):goal) =
+   let tha = FIX th
+   in let thb = TRANS (tha, BETACONV (rhs (concl tha)))
+      in let F,unwound = destequiv (concl thb)
+      in ([(substinform [unwound,F] w),ss,fml],
+          (SUBS [SYM thb] o hd));;
+
+let UNWINDOCCSTAC nlist th ((w,ss,fml):goal) =
+   let tha = FIX th
+   in let thb = TRANS (tha, BETACONV (rhs (concl tha)))
+      in let F, unwound = destequiv (concl thb)
+      in ([(substoccsinform [unwound,nlist,F] w),ss,fml],
+          (SUBS [SYM thb] o hd));;
+
+% takes a goal of the form  "....G....",ss,fml
+       and a theorem of the form |- "G == FIX ↑funG"
+   and produces a subgoal of the form "....↑funG G....",ss,fml
+          evaluated out one step (funG applied to "G")       %
+     
+letrec destquantl (l, w) = isquant w => let c,d = destquant w
+                                     in destquantl ((c.l), d) |
+                                     (l,w);;
+
+% !xn...!x1.w        to  [x1;...;xn],w        %
+
+letrec ITSPEC l th = null l => th | ITSPEC (tl l) (SPEC (hd l) th);;
+
+% [xn';...;x1'], |- !x1...!xn.P(x1...xn)    to   |- P(xn'...x1')  %
+
+letrec reverse l1 l2 = null l1 => l2 | reverse (tl l1) ((hd l1).l2);;
+
+let USEIHLESSTAC ((w,ss,fml):goal) =
+   letref FML = fml
+   in ((let IH = (ASSUME  (hd FML))
+      in let boundvars,rest = destquantl (nil, (hd FML))
+         in let matchlist = fst (termmatch ([]:term list,
+                           []:type list) (lhs rest) (lhs w))
+            in let speclist = reverse
+                              ((map (fst o (\e.revassoc e matchlist)))  
+                                   boundvars) nil
+               in let IH' = ITSPEC speclist IH
+                  in ([mkinequiv (rhs (concl IH'),rhs w), ss, fml],
+                       ((\th.(TRANS (IH',th))) o hd)))
+        ! FML := tl FML)
+        ? failwith `USEIHLESSTAC` ;;
+
+% takes a goal of the form "P' << Q'", ss,
+                          ["!x1...!xn.P << R";...]
+ and produces a subgoal with form part "R [...] << Q'"
+where R [...] is R with instantiations used in matching P and P';
+looks for a form in fml where that can be done, else fails.
+  IH' is the correct instance of the IH.    %
+
+let USEIHMORETAC ((w,ss,fml):goal) =
+   letref FML = fml
+   in ((let IH = (ASSUME  (hd FML))
+      in let boundvars,rest = destquantl (nil, (hd FML))
+         in let matchlist = fst (termmatch ([]:term list,
+                           []:type list) (rhs rest) (rhs w))
+            in let speclist = reverse
+                              ((map (fst o (\e.revassoc e matchlist)))  
+                                   boundvars) nil
+               in let IH' = ITSPEC speclist IH
+                  in ([mkinequiv (lhs w, lhs (concl IH')),ss,fml], 
+                       ((\th.(TRANS (th,IH'))) o hd)))
+        ! FML := tl FML)
+        ? failwith `USEIHMORETAC` ;;
+
+%takes a goal of the form "P' << Q'",ss,
+                              ["x1...!xn.R << Q";...]
+and produces a subgoal with form part "P' << R [...]"
+where R [...] is R with instantiations used in matching
+Q and Q'; finds a form in form list where this can be done,
+else fails; IH' is the correct instance if the IH.   %
+
+let STRENGTHENTAC ((w,ss,fml):goal) =
+   let varlist,fm = destquantl (nil,w)
+   in let A,B = destinequiv fm
+      in ([mkequiv (A,B),ss,fml],
+          ((\th. GENL varlist th) o HALF1 o hd));;
+
+% takes a goal of the form "!x1 ... !xn. A << B",ss,fml or
+          "A << B",ss,fml
+  and produces a subgoal "!x1 ... !xn. A == B",ss,fml or
+     "A == B",ss,fml                        %
+
+ 
+
+let USEIHTAC ((w,ss,fml):goal) =
+   letref FML = fml
+   in ((let IH = ASSUME (hd FML)
+      in let boundvars,rest = destquantl (nil, (hd FML))
+         in let matchlist = fst (termmatch ([]:term list,
+                           []:type list) (lhs rest)(lhs w))
+            in let speclist = reverse
+                              ((map (fst o (\e. revassoc e matchlist)))
+                                   boundvars) nil
+               in let IH' = ITSPEC speclist IH
+                  in aconvform (w, (concl IH')) =>
+                     ([w, (ssadd IH ss), fml],
+                      hd) | fail )
+        ! FML := tl FML)
+        ? failwith `USEIHTAC`;;
+
+% takes a goal, finds the IH in the fml
+and adds that to the ss part of goal.
+ The form in question must have form "!x1...xn. P == Q" or "P == Q". %
+

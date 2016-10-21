@@ -1,0 +1,71 @@
+
+STRHD  "HD UU == UU:d"
+
+STRTL  "TL UU == UU:dlist"
+
+HDCONS  "!dl:dlist. !d:d. HD(CONS d dl) == d"
+
+TLCONS  "!dl:dlist. !d:d. TL(CONS d dl) == dl"
+
+HDNIL  "HD NIL == UU:d"
+
+TLNIL  "TL NIL == UU:dlist"
+
+HDLIST  "!d:d. HD(LIST d) == d"
+
+TLLIST  "!d:d. TL(LIST d) == NIL"
+
+LISCNS  "!d:d. LIST d == CONS d NIL"
+
+CNSNIL  "!d:d. EQ(CONS d NIL)NIL == FF"
+
+ls1  "!Exp:(d->d)->((d#d->d)->(d->(d->(dlist->d)))). !F:d->d. !h:d#d->d. !G:d->(d->(dlist->d)). G == FIX(\G':d->~
+(d->(dlist->d)).\x:d.\z:d.\s:dlist.EQ s NIL=>z|G'(HD s)(h(z, F x))(TL s)) :d->(d->(dlist->d)) & Exp == FIX(\Exp'~
+:(d->d)->((d#d->d)->(d->(d->(dlist->d)))).\F.\h.\x.\z.\s.EQ s NIL=>z|Exp' F h(HD s)(h(z, F x))(TL s)) :(d->d)->(~
+(d#d->d)->(d->(d->(dlist->d)))) IMP G == Exp F h"
+
+ls2  "!F:d->d. !Exp:(d->d)->((d#d->d)->(d->(d->(dlist->d)))). !g2:d->d. !g1:d->d. !f:d->d. !h:d#d->d. !P:d->tr. ~
+!F1:d->(d->(dlist->d)). F1 == FIX(\F1':d->(d->(dlist->d)).\x:d.\z:d.\s:dlist.EQ s NIL=>z|(P x=>F1'(HD s)(h(z, f ~
+x))(TL s)|F1'(g1 x)z(CONS(g2 x)s))) :d->(d->(dlist->d)) & Exp == FIX(\Exp':(d->d)->((d#d->d)->(d->(d->(dlist->d)~
+))).\F.\h.\x.\z.\s.EQ s NIL=>z|Exp' F h(HD s)(h(z, F x))(TL s)) :(d->d)->((d#d->d)->(d->(d->(dlist->d)))) & F ==~
+ FIX(\F':d->d.\x.P x=>f x|h(F'(g1 x), F'(g2 x))) :d->d & (!a:d. !b:d. !c:d. h(h(a, b), c) == h(a, h(b, c))) IMP ~
+F1 << Exp F h"
+
+ls5  "!g2:d->d. !g1:d->d. !f:d->d. !h:d#d->d. !P:d->tr. !F1:d->(d->(dlist->d)). F1 == FIX(\F1':d->(d->(dlist->d)~
+).\x:d.\z:d.\s:dlist.EQ s NIL=>z|(P x=>F1'(HD s)(h(z, f x))(TL s)|F1'(g1 x)z(CONS(g2 x)s))) :d->(d->(dlist->d)) ~
+& (!x. h(UU, x) == UU:d) IMP (!x. !s. F1 x UU s == UU:d)"
+
+ls3  "!F1:d->(d->(dlist->d)). !g2:d->d. !g1:d->d. !f:d->d. !P:d->tr. !F:d->d. !h:d#d->d. !G:d->(d->(dlist->d)). ~
+G == FIX(\G':d->(d->(dlist->d)).\x:d.\z:d.\s:dlist.EQ s NIL=>z|G'(HD s)(h(z, F x))(TL s)) :d->(d->(dlist->d)) & ~
+F == FIX(\F':d->d.\x.P x=>f x|h(F'(g1 x), F'(g2 x))) :d->d & (!x. h(x, UU) == UU:d) & F1 == FIX(\F1':d->(d->(dli~
+st->d)).\x.\z.\s.EQ s NIL=>z|(P x=>F1'(HD s)(h(z, f x))(TL s)|F1'(g1 x)z(CONS(g2 x)s))) :d->(d->(dlist->d)) & (!~
+x. h(UU, x) == UU:d) & (!a:d. !b:d. !c:d. h(h(a, b), c) == h(a, h(b, c))) IMP G << F1"
+
+ls6  "!x:d. !F:d->d. !e:d. !h:d#d->d. !Exp:(d->d)->((d#d->d)->(d->(d->(dlist->d)))). Exp == FIX(\Exp':(d->d)->((~
+d#d->d)->(d->(d->(dlist->d)))).\F.\h.\x.\z:d.\s:dlist.EQ s NIL=>z|Exp' F h(HD s)(h(z, F x))(TL s)) :(d->d)->((d#~
+d->d)->(d->(d->(dlist->d)))) & (!x. h(e, x) == x) IMP Exp F h x e(LIST dummy) == F x"
+
+ls4  "!F1:d->(d->(dlist->d)). !g2:d->d. !g1:d->d. !f:d->d. !P:d->tr. !Exp:(d->d)->((d#d->d)->(d->(d->(dlist->d))~
+)). !F:d->d. !h:d#d->d. !G:d->(d->(dlist->d)). G == FIX(\G':d->(d->(dlist->d)).\x:d.\z:d.\s:dlist.EQ s NIL=>z|G'~
+(HD s)(h(z, F x))(TL s)) :d->(d->(dlist->d)) & Exp == FIX(\Exp':(d->d)->((d#d->d)->(d->(d->(dlist->d)))).\F.\h.\~
+x.\z.\s.EQ s NIL=>z|Exp' F h(HD s)(h(z, F x))(TL s)) :(d->d)->((d#d->d)->(d->(d->(dlist->d)))) & G == FIX(\G'.\x~
+.\z.\s.EQ s NIL=>z|G'(HD s)(h(z, F x))(TL s)) :d->(d->(dlist->d)) & F == FIX(\F':d->d.\x.P x=>f x|h(F'(g1 x), F'~
+(g2 x))) :d->d & (!x. h(x, UU) == UU:d) & F1 == FIX(\F1':d->(d->(dlist->d)).\x.\z.\s.EQ s NIL=>z|(P x=>F1'(HD s)~
+(h(z, f x))(TL s)|F1'(g1 x)z(CONS(g2 x)s))) :d->(d->(dlist->d)) & (!x. h(UU, x) == UU:d) & (!a:d. !b:d. !c:d. h(~
+h(a, b), c) == h(a, h(b, c))) & F1 == FIX(\F1'.\x.\z.\s.EQ s NIL=>z|(P x=>F1'(HD s)(h(z, f x))(TL s)|F1'(g1 x)z(~
+CONS(g2 x)s))) :d->(d->(dlist->d)) & Exp == FIX(\Exp'.\F.\h.\x.\z.\s.EQ s NIL=>z|Exp' F h(HD s)(h(z, F x))(TL s)~
+) :(d->d)->((d#d->d)->(d->(d->(dlist->d)))) & F == FIX(\F'.\x.P x=>f x|h(F'(g1 x), F'(g2 x))) :d->d & (!a. !b. !~
+c. h(h(a, b), c) == h(a, h(b, c))) IMP F1 == Exp F h"
+
+ls7  "!x:d. !e:d. !F1:d->(d->(dlist->d)). !g2:d->d. !g1:d->d. !f:d->d. !P:d->tr. !Exp:(d->d)->((d#d->d)->(d->(d-~
+>(dlist->d)))). !F:d->d. !h:d#d->d. !G:d->(d->(dlist->d)). G == FIX(\G':d->(d->(dlist->d)).\x.\z:d.\s:dlist.EQ s~
+ NIL=>z|G'(HD s)(h(z, F x))(TL s)) :d->(d->(dlist->d)) & Exp == FIX(\Exp':(d->d)->((d#d->d)->(d->(d->(dlist->d))~
+)).\F.\h.\x.\z.\s.EQ s NIL=>z|Exp' F h(HD s)(h(z, F x))(TL s)) :(d->d)->((d#d->d)->(d->(d->(dlist->d)))) & G == ~
+FIX(\G'.\x.\z.\s.EQ s NIL=>z|G'(HD s)(h(z, F x))(TL s)) :d->(d->(dlist->d)) & F == FIX(\F':d->d.\x.P x=>f x|h(F'~
+(g1 x), F'(g2 x))) :d->d & (!x. h(x, UU) == UU:d) & F1 == FIX(\F1':d->(d->(dlist->d)).\x.\z.\s.EQ s NIL=>z|(P x=~
+>F1'(HD s)(h(z, f x))(TL s)|F1'(g1 x)z(CONS(g2 x)s))) :d->(d->(dlist->d)) & (!x. h(UU, x) == UU:d) & (!a:d. !b:d~
+. !c:d. h(h(a, b), c) == h(a, h(b, c))) & F1 == FIX(\F1'.\x.\z.\s.EQ s NIL=>z|(P x=>F1'(HD s)(h(z, f x))(TL s)|F~
+1'(g1 x)z(CONS(g2 x)s))) :d->(d->(dlist->d)) & Exp == FIX(\Exp'.\F.\h.\x.\z.\s.EQ s NIL=>z|Exp' F h(HD s)(h(z, F~
+ x))(TL s)) :(d->d)->((d#d->d)->(d->(d->(dlist->d)))) & F == FIX(\F'.\x.P x=>f x|h(F'(g1 x), F'(g2 x))) :d->d & ~
+(!a. !b. !c. h(h(a, b), c) == h(a, h(b, c))) & Exp == FIX(\Exp'.\F.\h.\x.\z.\s.EQ s NIL=>z|Exp' F h(HD s)(h(z, F~
+ x))(TL s)) :(d->d)->((d#d->d)->(d->(d->(dlist->d)))) & (!x. h(e, x) == x) IMP F1 x e(LIST dummy) == F x"

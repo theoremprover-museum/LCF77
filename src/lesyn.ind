@@ -1,0 +1,42 @@
+
+let SIMPCOND eqn th = SIMP (ssadd (ASSUME eqn) BASICSS) th ;;
+
+let PROC v F Fth instl eqn th =
+  SUBST [SIMPCOND eqn th, v] F (INST instl Fth);;
+
+
+
+let NEXPINDUCT(n,i,nop,e1,e2) e F [uuth;nconth;identh;cnexpth] =
+ let isncon,isiden,iscnexp = "isncon↑e", "isiden↑e", "iscnexp↑e"
+ and f = mkvar(gentok(), ":NEXP->NEXP")
+    in
+ let G = mkquant(e, substinform[mkcomb(f,e),e] F)
+ and ax = SYM(SPEC f (SPEC e (AXIOM`LESYN` `expax2`)))
+ and PROCF = PROC e F
+    in
+ SUBST [SPEC e (AXIOM`LESYN` `expax1`) , e] F
+       (SPEC e (INDUCT ["expfun", f] G (baseth,stepth)))
+  where baseth = GEN e (SUBST [SYM(MINAP"UU↑e:NEXP") , e] F uuth)
+  and stepth = GEN e
+   let ASSG = ASSUME G in  CASES isncon
+   (PROCF nconth ["destncon↑e", n] (eqtt isncon) ax,
+    casef,
+    PROCF uuth [] (equu isncon) ax
+    where casef = 
+    let ax = SIMPCOND(eqff isncon)ax in  CASES isiden
+    (PROCF identh ["destiden↑e", i] (eqtt isiden) ax,
+     casef,
+     PROCF uuth [] (equu isiden) ax
+     where casef =
+     let ax = SIMPCOND(eqff isiden)ax in  CASES iscnexp
+     (caset,
+      PROCF uuth [] (eqff iscnexp) ax,
+      PROCF uuth [] (equu iscnexp) ax
+      where caset =
+      let ce = "destcnexp↑e" in
+      let d1,d2 = "FST(SND↑ce)", "SND(SND↑ce)" in
+      SUBST [SIMPCOND(eqtt iscnexp)ax , e] F
+       (MP(MP (INST ["FST↑ce",nop ; "↑f↑d1",e1 ; "↑f↑d2",e2] cnexpth)
+         (SPEC d1 ASSG))(SPEC d2 ASSG))
+   )))
+;;

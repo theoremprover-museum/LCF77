@@ -1,0 +1,38 @@
+COMMENT ⊗   VALID 00002 PAGES
+C REC  PAGE   DESCRIPTION
+C00001 00001
+C00002 00002	∂24-Jan-79  2012	Great Pumpkin	Restored Files  
+C00004 ENDMK
+C⊗;
+∂24-Jan-79  2012	Great Pumpkin	Restored Files  
+Here is a status report on your PUMPKIN requests:
+
+Tape	File					Status
+
+P1061	WRITML.LAP[LCF,FWH]			Restored
+P1061	TYPEOL.LAP[LCF,FWH]			Restored
+P1061	TYPEML.LAP[LCF,FWH]			Restored
+P1061	TRAN.LAP[LCF,FWH]			Restored
+P1061	TRACE.LAP[LCF,FWH]			Restored
+P1061	TML.LAP[LCF,FWH]			Restored
+P1061	THYFNS.LAP[LCF,FWH]			Restored
+P1061	SIMPL.LAP[LCF,FWH]			Restored
+P1061	SHARE.LAP[LCF,FWH]			Restored
+P1061	PROMPT.LAP[LCF,FWH]			Restored
+P1061	OPP.LAP[LCF,FWH]			Restored
+P1061	OL3.LAP[LCF,FWH]			Restored
+P1061	OL2.LAP[LCF,FWH]			Restored
+P1061	OL1.LAP[LCF,FWH]			Restored
+P1061	OL0.LAP[LCF,FWH]			Restored
+P1061	MLPRIN.LAP[LCF,FWH]			Restored
+P1061	LIS.LAP[LCF,FWH]			Restored
+P1061	LEAN.LAP[LCF,FWH]			Restored
+P1061	LCFO.LAP[LCF,FWH]			Restored
+P1061	LCFM.LAP[LCF,FWH]			Restored
+P1061	IOX.LAP[LCF,FWH]			Restored
+P1061	GP.LAP[LCF,FWH]				Restored
+P1061	DML.LAP[LCF,FWH]			Restored
+P1061	CLRBFI.LAP[LCF,FWH]			Restored
+P1061	LCFM.LAP[LCF,FWH]			Not found on tape
+P1061	IOX.LAP[LCF,FWH]			Not found on tape
+

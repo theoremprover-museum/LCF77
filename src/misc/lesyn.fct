@@ -1,0 +1,24 @@
+
+inn  "!n:NCON. isncon(mkncon n) == TT"
+
+ini  "!i:IDEN. isncon(mkiden i) == FF"
+
+inc  "!c:CNEXP. isncon(mkcnexp c) == FF"
+
+iin  "!n:NCON. isiden(mkncon n) == FF"
+
+iii  "!i:IDEN. isiden(mkiden i) == TT"
+
+iic  "!c:CNEXP. isiden(mkcnexp c) == FF"
+
+icn  "!n:NCON. iscnexp(mkncon n) == FF"
+
+ici  "!i:IDEN. iscnexp(mkiden i) == FF"
+
+icc  "!c:CNEXP. iscnexp(mkcnexp c) == TT"
+
+dnn  "!n:NCON. destncon(mkncon n) == n"
+
+dii  "!i:IDEN. destiden(mkiden i) == i"
+
+dcc  "!c:CNEXP. destcnexp(mkcnexp c) == c"

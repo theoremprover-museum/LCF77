@@ -1,0 +1,55 @@
+
+(TML)
+newparent`LESYN` ;;
+
+
+newtypes[
+    "PROG   = ASS  + PROG1 " ;
+    "PROG1  = SEQ  + PROG2 " ;
+    "PROG2  = COND + ITER  " ;
+    "ASS    = IDEN # NEXP  " ;
+    "SEQ    = PROGPR       " ;
+    "COND   = TEXP # PROGPR" ;
+    "PROGPR = PROG # PROG  " ]  ;;
+
+map newconstant (map f ``isass isseq iscond isiter``)
+    where f x =  x, ":PROG->TR" ;;
+
+let phyla = [ ":ASS" ; ":SEQ" ; ":COND" ; ":ITER" ] ;;
+
+letrec maptwo f l l' =
+    null l => [] | f(hd l)(hd l') . maptwo f (tl l)(tl l') ;;
+
+map newconstant (maptwo f ``mkass mkseq mkcond mkiter`` phyla)
+    where f x y =  x,mkfuntype(y,":PROG") ;;
+
+map newconstant (maptwo f ``destass destseq destcond destiter``phyla)
+    where f x y  =  x, ":PROG->↑y" ;;
+
+
+map newaxiom[
+    `isa`  , "isass p == ISL p" ;
+    `iss`  , "isseq p == ISL p => FF | ISL(OUTR p)" ;
+    `isc`  , "iscond p == ISL p=>FF|ISL(OUTR p)=>FF|ISL(OUTR(OUTR p))";
+    `isi`  , "isiter p == ISL p=>FF|ISL(OUTR p)=>FF|ISR(OUTR(OUTR p))";
+    `mka`  , "mkass a == INL a" ;
+    `mks`  , "mkseq s == INR(INL s)" ;
+    `mkc`  , "mkcond c == INR(INR(INL c))" ;
+    `mki`  , "mkiter i == INR(INR(INR i))" ;
+    `desta`, "destass p == OUTL p" ;
+    `dests`, "destseq p == OUTL(OUTR p)" ;
+    `destc`, "destcond p == OUTL(OUTR(OUTR p))" ;
+    `desti`, "destiter p == OUTR(OUTR(OUTR p))" ]  ;;
+newconstant( `progfun` , ":(PROG->PROG)->(PROG->PROG)" ) ;;
+
+newaxiom( `progax1` , "p == FIX progfun p" ) ;;
+
+newaxiom( `progax2` , "progfun g p ==
+    isass p => mkass(destass p) |
+    isseq p => mkseq
+     (g(FST(destseq p)) , g(SND(destseq p))) |
+    iscond p=> mkcond
+     (FST(destcond p),g(FST(SND(destcond p))),g(SND(SND(destcond p)))) |
+    isiter p=> mkiter
+     (FST(destiter p), g(SND(destiter p))) |
+    UU "   )   ;;

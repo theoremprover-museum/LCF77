@@ -1,0 +1,6 @@
+
+newolinfix ( `=` , ":IDEN#IDEN->tr" ) ;;
+
+newconstant ( `occne` , ":IDEN->(NEXP->tr)" ) ;;
+
+newconstant ( `substne` , ":NEXP->(IDEN->(NEXP->NEXP))" ) ;;

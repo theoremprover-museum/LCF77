@@ -1,0 +1,141 @@
+
+
+(DEFPROP MARK
+ (LAMBDA(vars %TYVL p)
+  ((LAMBDA (%L) (MARK1 p))
+   (MAPCAR (FUNCTION (LAMBDA (X) (varPAIR (QUOTE noninstvar) X)))
+	   vars)))
+EXPR)
+
+(DEFPROP MARK1
+ (LAMBDA(p)
+  (SELECTQ
+   (CAR p)
+   (const (TRIPLE (QUOTE const) (CADR p) (MARKTY (CDDR p))))
+   (var
+    (COND ((ASSOC1 p %L))
+	  (T (CDAR (SETQ %L (CONS (varPAIR (QUOTE instvar) p) %L))))))
+   (comb (MARK2 p))
+   (abs
+    ((LAMBDA (%L) (MARK2 p))
+     (CONS (varPAIR (QUOTE bvar) (CAADR p)) %L)))
+   (ERROR (QUOTE MARK))))
+EXPR)
+
+(DEFPROP MARK2
+ (LAMBDA(p)
+  (TRIPLE (CAR p)
+	  (CONS (MARK1 (CAADR p)) (MARK1 (CDADR p)))
+	  (MARKTY (CDDR p))))
+EXPR)
+
+(DEFPROP varPAIR
+ (LAMBDA (TOK X) (CONS X (TRIPLE TOK X (MARKTY (CDDR X)))))
+EXPR)
+
+(DEFPROP MARKTY
+ (LAMBDA (TY) (CONSMONOP (MTY TY) TY))
+EXPR)
+
+(DEFPROP CONSMONOP
+ (LAMBDA(MTY TY)
+  (COND ((EQ MTY (QUOTE mono)) (CONS (QUOTE mono) TY)) (T MTY)))
+EXPR)
+
+(DEFPROP MTY
+ (LAMBDA(TY)
+  (SELECTQ
+   (CAR TY)
+   (consttype (QUOTE mono))
+   (vartype (COND ((MEMQ TY %TYVL) (QUOTE mono)) (T TY)))
+   ((sumtype prodtype funtype)
+    ((LAMBDA(MTY1 MTY2)
+      (COND ((AND (EQ MTY1 (QUOTE mono)) (EQ MTY2 (QUOTE mono)))
+	     (QUOTE mono))
+	    (T
+	     (TRIPLE (CAR TY)
+		     (CONSMONOP MTY1 (CADR TY))
+		     (CONSMONOP MTY2 (CDDR TY))))))
+     (MTY (CADR TY))
+     (MTY (CDDR TY))))
+   (ERROR (QUOTE MARKTY))))
+EXPR)
+
+(DEFPROP ISMONO
+ (LAMBDA (p) (EQ (CADDR p) (QUOTE mono)))
+EXPR)
+
+(DEFPROP MATCH
+ (LAMBDA(p t)
+  (SELECTQ
+   (CAR p)
+   (const (AND (EQ (CADR p) (CADR t)) (TYMATCH (CDDR p) (CDDR t))))
+   (comb
+    (AND (EQ (CAR t) (QUOTE comb))
+	 (OR (NOT (ISMONO p)) (EQ (CDDDR p) (CDDR t)))
+	 (MATCH (CAADR p) (CAADR t))
+	 (MATCH (CDADR p) (CDADR t))))
+   (abs
+    (AND (EQ (CAR t) (QUOTE abs))
+	 (COND ((ISMONO p) (EQ (CDDDR p) (CDDR t)))
+	       (T (TYMATCH (CDDR (CAADR p)) (CDDR (CAADR t)))))
+	 ((LAMBDA (BVPAIRS CBL) (MATCH (CDADR p) (CDADR t)))
+	  (CONS (CONS (CAADR p) (CAADR t)) BVPAIRS)
+	  (CONS (CAADR t) CBL))))
+   (bvar (EQ (ASSOC p BVPAIRS) (REVASSOC t BVPAIRS)))
+   (noninstvar (AND (EQ (CADR p) t) (NOT (MEMQ t CBL))))
+   (instvar
+    (COND
+     ((NOT (FREEIN CBL t))
+      ((LAMBDA(u)
+	(COND
+	 (u (ALPHACONV t u))
+	 ((TYMATCH (CDDR p) (CDDR t))
+	  (SETQ INSTLIST (CONS (CONS t p) INSTLIST)))))
+       (REVASSOC1 p INSTLIST)))))
+   (ERROR (QUOTE MATCH))))
+EXPR)
+
+(DEFPROP TYMATCH
+ (LAMBDA(MTY TY)
+  (SELECTQ
+   (CAR MTY)
+   (mono (EQ (CDR MTY) TY))
+   (vartype
+    ((LAMBDA(TY')
+      (COND (TY' (EQ TY TY'))
+	    (T (SETQ INSTTYLIST (CONS (CONS TY MTY) INSTTYLIST)))))
+     (REVASSOC1 MTY INSTTYLIST)))
+   (sumtype (TYMATCH2 (CDR MTY) (destsumtype TY)))
+   (prodtype (TYMATCH2 (CDR MTY) (destprodtype TY)))
+   (funtype (TYMATCH2 (CDR MTY) (destfuntype TY)))
+   (ERROR (QUOTE TYMATCH))))
+EXPR)
+
+(DEFPROP TYMATCH2
+ (LAMBDA(X Y)
+  (AND (TYMATCH (CAR X) (CAR Y)) (TYMATCH (CDR X) (CDR Y))))
+EXPR)
+
+(DEFPROP MATCHFN
+ (LAMBDA(%E)
+  (PROG	(INSTLIST INSTTYLIST BVPAIRS CBL)
+	(OR (MATCH (CDR %E) (CAR %E)) (ERR (QUOTE termmatch)))
+	(MAPC
+	 (FUNCTION
+	  (LAMBDA(tp)
+	   (RPLACD
+	    tp
+	    ((LAMBDA(t x)
+	      (COND ((eqtype t x) x)
+		    (T (mkvar (CADR (variant x NIL)) (CDDR t)))))
+	     (CAR tp)
+	     (CADR (CDR tp))))))
+	 INSTLIST)
+	(RETURN (CONS INSTLIST INSTTYLIST))))
+EXPR)
+
+(DEFPROP MATCHCLOSURE
+ (LAMBDA(vars tyvars p)
+  (CONS (FUNCTION MATCHFN) (MARK vars tyvars p)))
+EXPR)

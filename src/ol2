@@ -1,0 +1,321 @@
+
+
+(DEFPROP ALPHACONV
+ (LAMBDA(OB1 OB2)
+  (COND ((EQUAL OB1 OB2)) (((LAMBDA (%L) (ALPHA OB1 OB2)) NIL))))
+EXPR)
+
+(DEFPROP ALPHA
+ (LAMBDA(OB1 OB2)
+  (COND
+   ((EQ (CAR OB1) (CAR OB2))
+    (SELECTQ
+     (CAR OB1)
+     ((const truth) (EQ OB1 OB2))
+     (var
+      ((LAMBDA (P1 P2) (COND ((OR P1 P2) (EQ P1 P2)) ((EQ OB1 OB2))))
+       (ASSOC OB1 %L)
+       (REVASSOC OB2 %L)))
+     (abs (SETQ %L (CONS (CONS (CAADR OB1) (CAADR OB2)) %L))
+	  (AND (EQ (CDDR OB1) (CDDR OB2))
+	       (ALPHA (CDADR OB1) (CDADR OB2))))
+     (comb
+      (AND (EQ (CDDR OB1) (CDDR OB2))
+	   ((LAMBDA (%L) (ALPHA (CAADR OB1) (CAADR OB2))) %L)
+	   (ALPHA (CDADR OB1) (CDADR OB2))))
+     (quant (SETQ %L (CONS (CONS (CADR OB1) (CADR OB2)) %L))
+	    (ALPHA (CDDR OB1) (CDDR OB2)))
+     ((imp conj equiv inequiv)
+      (AND ((LAMBDA (%L) (ALPHA (CADR OB1) (CADR OB2))) %L)
+	   (ALPHA (CDDR OB1) (CDDR OB2))))
+     (ERR (QUOTE ALPHA))))))
+EXPR)
+
+(DEFPROP FREEVARS
+ (LAMBDA(OB)
+  (PROG (%ALL %VARS) (VARS OB NIL) (RETURN (REVERSE %VARS))))
+EXPR)
+
+(DEFPROP ALLVARS
+ (LAMBDA(OB)
+  (PROG	(%ALL %VARS)
+	(SETQ %ALL T)
+	(VARS OB NIL)
+	(RETURN (REVERSE %VARS))))
+EXPR)
+
+(DEFPROP VARS
+ (LAMBDA(OB CBL)
+  (SELECTQ (CAR OB)
+	   ((truth const))
+	   (var (OR (MEMQ OB CBL) (ADDVAR OB)))
+	   (abs	(COND (%ALL (ADDVAR (CAADR OB))))
+		(VARS (CDADR OB) (CONS (CAADR OB) CBL)))
+	   (comb (VARS (CAADR OB) CBL) (VARS (CDADR OB) CBL))
+	   (quant (COND (%ALL (ADDVAR (CADR OB))))
+		  (VARS (CDDR OB) (CONS (CADR OB) CBL)))
+	   ((imp conj equiv inequiv)
+	    (VARS (CADR OB) CBL)
+	    (VARS (CDDR OB) CBL))
+	   (ERR (QUOTE VARS))))
+EXPR)
+
+(DEFPROP ADDVAR
+ (LAMBDA (V) (COND ((MEMQ V %VARS)) ((SETQ %VARS (CONS V %VARS)))))
+EXPR)
+
+(DEFPROP SUBSTITUTE
+ (LAMBDA(JOBL OB)
+  (PROG	(%OCCS %BSITES %LSITES %RSITES %FOUND)
+	(RETURN (HARDSUB (SUBSTRECL JOBL) OB))))
+EXPR)
+
+(DEFPROP SUBSTITUTEOCCS
+ (LAMBDA(JOBL OB)
+  (PROG	(%OCCS %BSITES %LSITES %RSITES %FOUND)
+	(SETQ %OCCS T)
+	(RETURN (HARDSUB (SUBSTRECL JOBL) OB))))
+EXPR)
+
+(DEFPROP SUBSTRECL
+ (LAMBDA(JOBL)
+  (COND
+   (JOBL
+    (PROG (T1 T2)
+	  (SETQ T1 (COND (%OCCS (CDDAR JOBL)) ((CDAR JOBL))))
+	  (SETQ T2 (CAAR JOBL))
+	  (OR (EQ (CDDR T1) (CDDR T2)) (ERR (QUOTE substin)))
+	  (RETURN
+	   (COND
+	    ((EQ T1 T2) (SUBSTRECL (CDR JOBL)))
+	    ((CONS
+	      (LIST
+	       T1
+	       T2
+	       (COND (%OCCS (OCCREC 1 (CADAR JOBL))) ((TWISTLIST T)))
+	       (FREEVARS T1)
+	       (FREEVARS T2))
+	      (SUBSTRECL (CDR JOBL))))))))))
+EXPR)
+
+(DEFPROP OCCREC
+ (LAMBDA(N L)
+  (COND	((ATOM L) (TWISTLIST L))
+	((*GREAT N (CAR L)) (ERR (QUOTE substin)))
+	((EQ N (CAR L)) (CONS T (OCCREC (ADD1 N) (CDR L))))
+	((CONS NIL (OCCREC (ADD1 N) L)))))
+EXPR)
+
+(DEFPROP HARDSUB
+ (LAMBDA(SRL U)
+  (COND	((NULL SRL) U)
+	((FINDSUB SRL U))
+	((SELECTQ (CAR U)
+		  ((var const truth) U)
+		  ((abs quant) (ABSSUB SRL U))
+		  ((comb imp conj equiv inequiv) (COMBSUB SRL U))
+		  (ERR (QUOTE HARDSUB))))))
+EXPR)
+
+(DEFPROP FINDSUB
+ (LAMBDA(SRL U)
+  (PROG	(T1 T2 REST)
+   A	(SETQ T1 (CAAR SRL))
+	(SETQ T2 (CADAR SRL))
+	(SETQ REST (CDDAR SRL))
+	(COND
+	 ((ALPHACONV U T1) (SETQ %FOUND (CAAR REST))
+			   (RPLACA REST (CDAR REST))
+			   (RETURN (COND (%FOUND T2) (U)))))
+	(COND ((SETQ SRL (CDR SRL)) (GO A)))))
+EXPR)
+
+(DEFPROP ABSSUB
+ (LAMBDA(SRL U)
+  (PROG	(VB V B NEWV NEWB)
+	(SETQ VB (SELECTQ (CAR U) (abs (CADR U)) (CDR U)))
+	(SETQ V (CAR VB))
+	(SETQ B (CDR VB))
+	(SETQ NEWB (HARDSUB (SETQ SRL (VFILTER V SRL)) B))
+	(COND ((EQ NEWB B) (RETURN U)))
+	(SETQ NEWV (variant V (T2FREES SRL)))
+	(COND (%FOUND (SETQ %FOUND NIL)
+		      (SETQ VB (CONS NEWV NEWB))
+		      (SETQ %BSITES (CONS VB %BSITES)))
+	      ((EQ NEWV V) (SETQ VB (CONS NEWV NEWB)))
+	      ((SETQ VB
+		     ((LAMBDA (%VTL) (CONS NEWV (EASYSUB NEWB)))
+		      (LIST (CONS V NEWV))))))
+	(RETURN
+	 (SELECTQ (CAR U)
+		  (abs (TRIPLE (QUOTE abs) VB (CDDR U)))
+		  (CONS (QUOTE quant) VB)))))
+EXPR)
+
+(DEFPROP VFILTER
+ (LAMBDA(V SRL)
+  (COND
+   (SRL
+    (COND ((MEMQ V (CADDDR (CAR SRL))) (CDR SRL))
+	  ((CONS (CAR SRL) (VFILTER V (CDR SRL))))))))
+EXPR)
+
+(DEFPROP T2FREES
+ (LAMBDA(SRL)
+  (COND (SRL (APPEND (CADDDR (CDAR SRL)) (T2FREES (CDR SRL))))))
+EXPR)
+
+(DEFPROP COMBSUB
+ (LAMBDA(SRL U)
+  (PROG	(LR L R NEWL NEWR LFOUND)
+	(SETQ LR (SELECTQ (CAR U) (comb (CADR U)) (CDR U)))
+	(SETQ L (CAR LR))
+	(SETQ R (CDR LR))
+	(SETQ NEWL (HARDSUB SRL L))
+	(SETQ LFOUND %FOUND)
+	(SETQ %FOUND NIL)
+	(SETQ NEWR (HARDSUB SRL R))
+	(COND
+	 ((AND (EQ L NEWL) (EQ R NEWR)) (SETQ %FOUND NIL) (RETURN U)))
+	(SETQ LR (CONS NEWL NEWR))
+	(COND (LFOUND (SETQ %LSITES (CONS LR %LSITES))))
+	(COND (%FOUND (SETQ %RSITES (CONS LR %RSITES))))
+	(SETQ %FOUND NIL)
+	(RETURN
+	 (SELECTQ (CAR U)
+		  (comb (TRIPLE (QUOTE comb) LR (CDDR U)))
+		  (CONS (CAR U) LR)))))
+EXPR)
+
+(DEFPROP EASYSUB
+ (LAMBDA(U)
+  (SELECTQ
+   (CAR U)
+   ((const truth) U)
+   (var (COND ((ASSOC1 U %VTL)) (U)))
+   ((abs quant)
+    (PROG (VB V B NEWB)
+	  (SETQ VB (SELECTQ (CAR U) (abs (CADR U)) (CDR U)))
+	  (SETQ V (CAR VB))
+	  (SETQ B (CDR VB))
+	  (COND ((OR (ASSOC V %VTL) (MEMQ VB %BSITES)) (RETURN U)))
+	  (SETQ NEWB (EASYSUB B))
+	  (RETURN
+	   (COND ((EQ NEWB B) U)
+		 ((EQ (CAR U) (QUOTE abs))
+		  (TRIPLE (QUOTE abs) (CONS V NEWB) (CDDR U)))
+		 ((TRIPLE (QUOTE quant) V NEWB))))))
+   ((comb imp conj equiv inequiv)
+    (PROG (LR L R NEWL NEWR)
+	  (SETQ LR (SELECTQ (CAR U) (comb (CADR U)) (CDR U)))
+	  (SETQ L (CAR LR))
+	  (SETQ R (CDR LR))
+	  (SETQ NEWL (COND ((MEMQ LR %LSITES) L) ((EASYSUB L))))
+	  (SETQ NEWR (COND ((MEMQ LR %RSITES) R) ((EASYSUB R))))
+	  (COND ((AND (EQ L NEWL) (EQ R NEWR)) (RETURN U)))
+	  (COND	((OR (MEMQ LR %LSITES) (MEMQ LR %RSITES))
+		 (RPLACD (RPLACA LR NEWL) NEWR))
+		((SETQ LR (CONS NEWL NEWR))))
+	  (RETURN
+	   (COND ((EQ (CAR U) (QUOTE comb))
+		  (TRIPLE (QUOTE comb) LR (CDDR U)))
+		 ((CONS (CAR U) LR))))))
+   (ERR (QUOTE EASYSUB))))
+EXPR)
+
+(DEFPROP ALPHACONVL
+ (LAMBDA(OBL OB)
+  (AND OBL (OR (ALPHACONV (CAR OBL) OB) (ALPHACONVL (CDR OBL) OB))))
+EXPR)
+
+(DEFPROP FREEIN
+ (LAMBDA(OBL OB)
+  (AND OBL
+       (OR (ALPHACONVL OBL OB)
+	   (SELECTQ
+	    (CAR OB)
+	    ((var const truth) NIL)
+	    (abs (FREEIN (SHRINK OBL (CAADR OB)) (CDADR OB)))
+	    (comb
+	     (OR (FREEIN OBL (CAADR OB)) (FREEIN OBL (CDADR OB))))
+	    (quant (FREEIN (SHRINK OBL (CADR OB)) (CDDR OB)))
+	    ((imp conj equiv inequiv)
+	     (OR (FREEIN OBL (CADR OB)) (FREEIN OBL (CDDR OB))))
+	    (ERR (QUOTE FREEIN))))))
+EXPR)
+
+(DEFPROP SHRINK
+ (LAMBDA(OBL V)
+  (COND
+   (OBL
+    (COND ((FREEIN (LIST V) (CAR OBL)) (SHRINK (CDR OBL) V))
+	  ((CONS (CAR OBL) (SHRINK (CDR OBL) V)))))))
+EXPR)
+
+(DEFPROP variant
+ (LAMBDA(V VL)
+  (PROG	(TOK)
+	(SETQ TOK (CADR V))
+	(SETQ VL (MAPCAR (FUNCTION CADR) VL))
+	(COND ((OR (MEMQ TOK VL) (CONSTP TOK))) ((GO B)))
+	(SETQ TOK (UNPRIME TOK))
+   A	(COND
+	 ((OR (MEMQ TOK VL) (CONSTP TOK))
+	  (SETQ TOK (PRIME TOK))
+	  (GO A)))
+   B	(RETURN (mkvar TOK (CDDR V)))))
+EXPR)
+
+(DEFPROP PRIME
+ (LAMBDA (TOK) (READLIST (NCONC (EXPLODE TOK) (LIST (QUOTE ')))))
+EXPR)
+
+(DEFPROP UNPRIME
+ (LAMBDA (TOK) (READLIST (OUTQ (QUOTE ') (EXPLODE TOK))))
+EXPR)
+
+(DEFPROP DISJVARS
+ (LAMBDA(OB)
+  (SELECTQ
+   (CAR OB)
+   ((truth var const) OB)
+   ((LAMBDA(PH X Y)
+     (SELECTQ
+      PH
+      ((imp conj equiv inequiv) (TRIPLE PH (DISJVARS X) (DISJVARS Y)))
+      (quant
+       ((LAMBDA(V)
+	 (TRIPLE PH V (SUBSTITUTE (LIST (CONS V X)) (DISJVARS Y))))
+	(variant X (OUTQ X (FREEVARS Y)))))
+      (comb
+       (TRIPLE PH (CONS (DISJVARS (CAR X)) (DISJVARS (CDR X))) Y))
+      (abs
+       ((LAMBDA(V)
+	 (TRIPLE
+	  PH
+	  (CONS
+	   V
+	   (SUBSTITUTE (LIST (CONS V (CAR X))) (DISJVARS (CDR X))))
+	  Y))
+	(variant (CAR X) (OUTQ (CAR X) (FREEVARS (CDR X))))))
+      (ERR (QUOTE DISJVARS))))
+    (CAR OB)
+    (CADR OB)
+    (CDDR OB))))
+EXPR)
+
+(DEFPROP DISCHALL
+ (LAMBDA(WL W)
+  (COND (WL (mk=imp (CAR WL) (DISCHALL (CDR WL) W))) (W)))
+EXPR)
+
+(DEFPROP CLOSEUP
+ (LAMBDA(VL W)
+  (COND (VL (mkquant (CAR VL) (CLOSEUP (CDR VL) W))) (W)))
+EXPR)
+
+(DEFPROP FACTOF
+ (LAMBDA(TH)
+  ((LAMBDA (W) (DISJVARS (CLOSEUP (FREEVARS W) W)))
+   (DISCHALL (CAR TH) (CDR TH))))
+EXPR)

@@ -1,0 +1,1990 @@
+COMMENT ⊗   VALID 00019 PAGES
+C REC  PAGE   DESCRIPTION
+C00001 00001
+C00002 00002	% PROMPT, LOOKUP, TMLINI %
+C00003 00003	% GPX %
+C00006 00004	% LEANPR %
+C00010 00005	% LEAN %
+C00017 00006	% ptble %
+C00020 00007	% SYMBS : copy in lapld.fls %
+C00025 00008	% TML %
+C00033 00009	% OPP %
+C00036 00010	% SIMPL %
+C00042 00011	% OL3 %
+C00045 00012	% IOX %
+C00052 00013	% DML %
+C00058 00014	% GP %
+C00062 00015	% SHARE %
+C00066 00016	% TYPEOL %
+C00071 00017	% LIS %
+C00074 00018	% OL1 %
+C00080 00019	% MLPRIN %
+C00084 ENDMK
+C⊗;
+% PROMPT, LOOKUP, TMLINI %
+
+% PROMPT %
+
+(DEFPROP PROMPT
+ (LAMBDA (N) ((LAMBDA (N X) (PROG2 (DEPOSIT 6453 N) X)) N (EXAMINE 6453)))
+EXPR)
+
+
+% LOOKUP %
+
+(DEFPROP LOOKUP
+ (LAMBDA(MKX)
+  (PROG	(PT)
+	(SETQ PT PRINTTABLE)
+   LOOP	(COND ((NULL PT) (SYSTEMERROR))
+	      ((EQ MKX (CAAR PT)) (RETURN (CDAR PT)))
+	      (T (SETQ PT (CDR PT)) (GO LOOP)))))
+EXPR)
+
+
+% TMLINI %
+
+(DE TML () (PROG ()
+  (TERPRI)
+  (PRINC 
+   @"LCF version 5 issued 27-oct-77
+(with simultaneous substitution and new simplification)" )
+  (TERPRI) (TERPRI)
+  (INITC)
+  (REMPROP @TML @EXPR)
+  (TML)
+))
+
+(INITFN NIL)
+
+% GPX %
+
+(DEFPROP SELECTQ
+ (LAMBDA(%SL)
+  ((LAMBDA(%KEY %CLAUSES %ESC)
+    (LIST (LIST	(QUOTE LAMBDA)
+		(QUOTE (%KEY))
+		(CONS (QUOTE COND)
+		      (APPEND (MAPCAR (FUNCTION T-CLAUSE) %CLAUSES)
+			      (LIST (LIST (QUOTE T) %ESC)))))
+	  %KEY))
+   (CADR %SL)
+   (REVERSE (CDR (REVERSE (CDDR %SL))))
+   (CAR (REVERSE (CDDR %SL)))))
+MACRO)
+
+(DEFPROP T-CLAUSE
+ (LAMBDA(%CL)
+  (COND	((NULL (CDR %CL)) (LIST (T-LOCK (CAR %CL)) NIL))
+	(T (CONS (T-LOCK (CAR %CL)) (CDR %CL)))))
+EXPR)
+
+(DEFPROP T-LOCK
+ (LAMBDA(%LOCK)
+  (COND	((ATOM %LOCK)
+	 (LIST (QUOTE EQ) (QUOTE %KEY) (LIST (QUOTE QUOTE) %LOCK)))
+	(T
+	 (LIST (QUOTE MEMQ)
+	       (QUOTE %KEY)
+	       (LIST (QUOTE QUOTE) %LOCK)))))
+EXPR)
+
+(DEFPROP PROGN
+ (LAMBDA(%PL)
+  (COND	((NULL (CDR %PL)) NIL)
+	(T (LIST (QUOTE COND) (CONS (QUOTE T) (CDR %PL))))))
+MACRO)
+
+(DEFPROP AND#
+ (LAMBDA(%L)
+  (COND	((NULL (CDR %L)) T)
+	((NULL (CDDR %L)) (CADR %L))
+	(T
+	 (LIST (QUOTE COND)
+	       (LIST (CONS (QUOTE AND)
+			   (REVERSE (CDR (REVERSE (CDR %L)))))
+		     (CAR (REVERSE (CDDR %L))))))))
+MACRO)
+
+(DEFPROP POPQ
+ (LAMBDA(%%L%%)
+  (LIST (QUOTE SETQ) (CADR %%L%%) (LIST (QUOTE CDR) (CADR %%L%%))))
+MACRO)
+
+(DEFPROP PUSHQ
+ (LAMBDA(%%L%%)
+  (LIST	(QUOTE SETQ)
+	(CADDR %%L%%)
+	(LIST (QUOTE CONS) (CADR %%L%%) (CADDR %%L%%))))
+MACRO)
+
+% LEANPR %
+
+(SETQ TOKEN NIL)  (SETQ PTOKEN NIL)
+(SETQ TOKCHS NIL) (SETQ PTOKCHS NIL)
+(SETQ TOKTYP NIL) (SETQ PTOKTYP NIL)
+(SETQ CHAR SPACE)
+
+
+
+(PUTPROP SPACE 1 @LEANPROP)
+(PUTPROP CR 1 @LEANPROP)
+(PUTPROP LF 1 @LEANPROP)
+(PUTPROP TAB 1 @LEANPROP)
+
+(PUTPROP @/' 2 @LEANPROP)
+
+(PUTPROP @a 2 @LEANPROP)    (PUTPROP @A 2 @LEANPROP)
+(PUTPROP @b 2 @LEANPROP)    (PUTPROP @B 2 @LEANPROP)
+(PUTPROP @c 2 @LEANPROP)    (PUTPROP @C 2 @LEANPROP)
+(PUTPROP @d 2 @LEANPROP)    (PUTPROP @D 2 @LEANPROP)
+(PUTPROP @e 2 @LEANPROP)    (PUTPROP @E 2 @LEANPROP)
+(PUTPROP @f 2 @LEANPROP)    (PUTPROP @F 2 @LEANPROP)
+(PUTPROP @g 2 @LEANPROP)    (PUTPROP @G 2 @LEANPROP)
+(PUTPROP @h 2 @LEANPROP)    (PUTPROP @H 2 @LEANPROP)
+(PUTPROP @i 2 @LEANPROP)    (PUTPROP @I 2 @LEANPROP)
+(PUTPROP @j 2 @LEANPROP)    (PUTPROP @J 2 @LEANPROP)
+(PUTPROP @k 2 @LEANPROP)    (PUTPROP @K 2 @LEANPROP)
+(PUTPROP @l 2 @LEANPROP)    (PUTPROP @L 2 @LEANPROP)
+(PUTPROP @m 2 @LEANPROP)    (PUTPROP @M 2 @LEANPROP)
+(PUTPROP @n 2 @LEANPROP)    (PUTPROP @N 2 @LEANPROP)
+(PUTPROP @o 2 @LEANPROP)    (PUTPROP @O 2 @LEANPROP)
+(PUTPROP @p 2 @LEANPROP)    (PUTPROP @P 2 @LEANPROP)
+(PUTPROP @q 2 @LEANPROP)    (PUTPROP @Q 2 @LEANPROP)
+(PUTPROP @r 2 @LEANPROP)    (PUTPROP @R 2 @LEANPROP)
+(PUTPROP @s 2 @LEANPROP)    (PUTPROP @S 2 @LEANPROP)
+(PUTPROP @t 2 @LEANPROP)    (PUTPROP @T 2 @LEANPROP)
+(PUTPROP @u 2 @LEANPROP)    (PUTPROP @U 2 @LEANPROP)
+(PUTPROP @v 2 @LEANPROP)    (PUTPROP @V 2 @LEANPROP)
+(PUTPROP @w 2 @LEANPROP)    (PUTPROP @W 2 @LEANPROP)
+(PUTPROP @x 2 @LEANPROP)    (PUTPROP @X 2 @LEANPROP)
+(PUTPROP @y 2 @LEANPROP)    (PUTPROP @Y 2 @LEANPROP)
+(PUTPROP @z 2 @LEANPROP)    (PUTPROP @Z 2 @LEANPROP)
+
+
+(PUTPROP @L (LIST LF) @STRINGMACRO)
+((¬*RBJ⎇↓ααIαB2&N"α∞I%∧αNRJLr≡6ε≥∩=$4RBBVR¬∩>Aα¬→↓"2M~QαN∧
+∞∃%∧αNRJLr≡6ε≥∩=$4RBBVR¬∩>Aα¬!↓"2M~QαR⊃%αα≥"J&:<jε∞JzH4(4Ph(4)EαVRB∀zAα↓{iα↓!{q↓=uJαα∩>,∩2∃$hQ"BV%αJ>A∧↓=5ααA=y%∧α∩>V∀b∃$4RBBVR¬∩>Aααyqα↓Byq%α¬">V
+d)$4)EαVRB∀zAα↓{Qα↓!{Q↓=uJαα∩>,∩2∃$hQ"BV%αJ>A∧↓?↓ααA?↓%∧α∩>V∀b∃$4RBBVR¬∩>Aααy⎇α↓By⎇↓>bIαα∩⎇*
+2∃Hh)"B-"BJ>αα↓=m∧↓!=mJαα∩>,∩2∃$hQ"BV%αJ>A∧↓=¬ααA=¬↓⎇a%αα$zV
+2*H4(4Ph)"N-"Eαε∀9Eα:La$4(1∃αd*ε9↓(h(4)D"⊗~B∀zAα≡t_4)↓Dbε6
+$	α:&`h)↓↓BB2ε6∀"¬↓"≤A%↓"≤z:⊃↓BB⊗Eα≤Aα∞R∀b∩NfjI↓"⊗∃⊃α∞R∀b∩NfjI%↓""α∞!%JH4)↓α↓"J⊗"∞!%JH4*⊗EαI$4Ph)"∩,2BJ>αα&:&$b⊗ε8hQ↓"2j
+∩¬∧r&04R↓↓"B∀z≤&:L`4(%E~⊗RE¬">.⊗rα:&1Hh(%"≤*REα$z.∞"~α:&1Hh(%"≤*REα$z.Rfαα:&1Hh(%"≤*REα≤BεIα≥αε∞∃Hh(%"¬*RBJ⎇↓αR>\∩⊗εJ-⊃α:&b↓"FV⎇"∃αR|ZZε1JH4(%EαVRB∀zAαR|Z2
+⊗∩⊗IαtJ1↓"*>R∃¬">.24
+1%$hP%"∞e∩
+~%JI$4*-BBI$hP4)"$*~BJ⎇↓α≡: h)↓"d
+6
+∩
+α:&0hQ↓↓"¬∩>≤%EA$4(JBN⊗R
+α∞~29α:&bH4)↓ααR>@JBN⊗R
+αBR>\*9αR|Z⊗9$hP%"N-"EαB$z.∞"~αR>.≤BM$4PI"N⊗%	αBR|ZRfA¬">.RM↓$4(JBN⊗R
+αB∞"⊃α∞"⊃$4(JB∞>:"↓!"⊗
+α∞"ε∩α∞6:$~"I$	       (PROG NIL L (COND ((NOT (EQ (GNC) CMNTCHR)) (GO L))))
+	       (SETQ CHAR (GNC))
+	       (GO TOP))
+	      ((EQ (SETQ X (LEANPROP CHAR)) 1)
+	       (SETQ CFLAG T)
+	       (SETQ CHAR (GNC))
+	       (GO TOP))
+	      ((EQ X 2) (SETQ TOKCHS (LIST CHAR))
+			(SETQ TOKTYP 1)
+			(COND ((NUMBERP CHAR) (NUMB)) (T (IDENT))))
+	      ((EQ CHAR TOKQTSYM)
+	       (SETQ TOKCHS NIL)
+	       (SETQ TOKTYP 1)
+	       (COND ((EQ (SETQ CHAR (GNC)) TOKQTSYM) (TCNL))
+		     (T (TCN))))
+	      (T (SETQ TOKCHS (LIST CHAR))
+		 (SETQ CHAR (GNC))
+		 (SETQ TOKTYP 2)
+		 (SETQ TOKEN (CAR TOKCHS))))
+	(COND
+	 ((AND (EQ TOKEN SCOLON) (EQ CHAR CR))
+	  (SETQ CHAR (PROG2 (GNC) (GNC)))))
+	(COND
+	 ((OR (NUMBERP TOKEN)
+	      (NOT (MEMQ CHAR (GET TOKEN (QUOTE DOUBLE)))))
+	  (RETURN TOKEN)))
+	(SETQ TOKTYP 2)
+	(SETQ TOKCHS (APPEND TOKCHS (LIST CHAR)))
+	(SETQ TOKEN (PACK TOKCHS))
+	(SETQ CHAR (GNC))
+	(RETURN TOKEN)))
+EXPR)
+
+(DEFPROP NUMB
+ (LAMBDA NIL
+  (COND	((NUMBERP (SETQ CHAR (GNC)))
+	 (PROG2 (SETQ TOKCHS (CONS CHAR TOKCHS)) (NUMB)))
+	(T (SETQ TOKEN (READLIST (REVERSE TOKCHS))))))
+EXPR)
+
+(DEFPROP IDENT
+ (LAMBDA NIL
+  (COND	((EQ (LEANPROP (SETQ CHAR (GNC))) 2)
+	 (PROG2 (SETQ TOKCHS (CONS CHAR TOKCHS)) (IDENT)))
+	(T (SETQ TOKEN (READLIST (REVERSE TOKCHS))))))
+EXPR)
+
+(DEFPROP TCN
+ (LAMBDA NIL
+  (PROG	NIL
+   L	(COND ((EQ CHAR ESCAPESYM)
+	       (SETQ CHAR (GNC))
+	       (SETQ TOKCHS (APPEND (ESCAPERTN) TOKCHS)))
+	      ((EQ CHAR TOKQTSYM)
+	       (SETQ CHAR (GNC))
+	       (SETQ TOKEN TOKBEARER)
+	       (PUTPROP
+		TOKBEARER
+		(APPEND (GET TOKBEARER (QUOTE TOKVAL))
+			(LIST (PACK (REVERSE TOKCHS))))
+		(QUOTE TOKVAL))
+	       (RETURN TOKEN))
+	      (T (SETQ TOKCHS (CONS CHAR TOKCHS))))
+	(SETQ CHAR (GNC))
+	(GO L)))
+EXPR)
+
+(DEFPROP TCNL
+ (LAMBDA NIL
+  (PROG	(TOKL)
+	(SETQ TOKL NIL)
+   L1	(SETQ CHAR (GNC))
+   L2	(COND
+	 ((EQ CHAR ESCAPESYM)
+	  (SETQ CHAR (GNC))
+	  (SETQ TOKCHS (APPEND (ESCAPERTN) TOKCHS))
+	  (GO L1))
+	 ((EQ CHAR TOKQTSYM)
+	  (COND
+	   ((EQ (SETQ CHAR (GNC)) TOKQTSYM)
+	    (COND
+	     (TOKCHS (SETQ TOKL (CONS (PACK (REVERSE TOKCHS)) TOKL))))
+	    (SETQ TOKEN TOKLBEARER)
+	    (PUTPROP
+	     TOKLBEARER
+	     (APPEND (GET TOKLBEARER (QUOTE TOKLVAL))
+		     (LIST (REVERSE TOKL)))
+	     (QUOTE TOKLVAL))
+	    (SETQ CHAR (GNC))
+	    (RETURN TOKEN))
+	   (T (SETQ TOKCHS (CONS TOKQTSYM TOKCHS)) (GO L2))))
+	 ((EQ (LEANPROP CHAR) 1)
+	  (PROG	NIL
+	   L3	(COND ((EQ (LEANPROP (SETQ CHAR (GNC))) 1) (GO L3))))
+	  (COND
+	   (TOKCHS (SETQ TOKL (CONS (PACK (REVERSE TOKCHS)) TOKL))))
+	  (SETQ TOKCHS NIL)
+	  (GO L2))
+	 (T (SETQ TOKCHS (CONS CHAR TOKCHS)) (GO L1)))))
+EXPR)
+
+(DEFPROP ESCAPERTN
+ (LAMBDA NIL
+  (COND	((EQ CHAR 0) (CHARSEQ SPACE 12))
+	((NUMBERP CHAR) (CHARSEQ SPACE CHAR))
+	((GET CHAR (QUOTE STRINGMACRO)))
+	(T (LIST CHAR))))
+EXPR)
+
+(DEFPROP LEANPROP
+ (LAMBDA (X) (COND ((NUMBERP X) 2) ((GET X (QUOTE LEANPROP))) (T 3)))
+EXPR)
+
+(DEFPROP VARTYPERTN
+ (LAMBDA NIL
+  (PROG	(N)
+	(COND (CFLAG (RETURN MULSYM)))
+	(SETQ N 1)
+   LOOP	(COND ((OR (NUMBERP TOKEN) (EQ TOKTYP 1) (EQ TOKEN MULSYM)))
+	      (T (RETURN (PACK (CHARSEQ MULSYM N)))))
+	(GNT)
+	(COND
+	 ((AND (EQ PTOKEN MULSYM) (NOT CFLAG))
+	  (SETQ N (ADD1 N))
+	  (GO LOOP)))
+	(RETURN (PACK (APPEND (CHARSEQ MULSYM N) (EXPLODE PTOKEN))))))
+EXPR)
+% ptble %
+
+(DEFPROP PRINTTABLE
+ (PRINTTABLE
+  (MK-NULLTYP /.)
+  (MK-INTTYP int)
+  (MK-BOOLTYP bool)
+  (MK-TOKTYP tok)
+  (MK-TERMTYP term)
+  (MK-FORMTYP form)
+  (MK-TYPETYP type)
+  (MK-THMTYP thm)
+  (MK-VARTYP 1)
+  (MK-CONSTTYP
+   (COND ((NULL (CDDR %EX)) (PRINC (CADR %EX)))
+	 ((NULL (CDDDR %EX)) (%PP (CADDR %EX)) (PRINC (CADR %EX)))
+	 (T (%PPL (CDDR %EX) (QUOTE /() (QUOTE /,) (QUOTE /)))
+	    (PRINC (CADR %EX)))))
+  (MK-LISTTYP 1 list)
+  (MK-PRODTYP /( 1 # 2 /))
+  (MK-SUMTYP /( 1 + 2 /))
+  (MK-FUNTYP /( 1 -> 2 /))
+  (MK-BOOLCONST
+   (PRINC (COND ((CADR %EX) (QUOTE true)) (T (QUOTE false)))))
+  (MK-INTCONST 1)
+  (MK-TOKCONST ` 1 `)
+  (MK-TYQUOT /" : (PRINC PPSYM) /")
+  (MK-QUOT /" (PRINC PPSYM) /")
+  (MK-VAR 1)
+  (MK-FAIL fail)
+  (MK-FAILWITH failwith /  1)
+  (MK-EMPTY /(/))
+  (MK-DUPL /( 1 /, 2 /))
+  (MK-LIST (%PPL (CDR %EX) (QUOTE /[) (QUOTE ;) (QUOTE /])))
+  (MK-STRAINT /( 1 : 2 /))
+  (MK-APPN /( 1 /  2 /))
+  (MK-BINOP /(
+	    2
+	    (PRINC
+	     (COND ((EQ (CADR %EX) (QUOTE %&)) (QUOTE &))
+		   ((EQ (CADR %EX) (QUOTE %or)) (QUOTE " or "))
+		   (T (CADR %EX))))
+	    3
+	    /))
+  (MK-UNOP (COND ((EQ (CADR %EX) (QUOTE %-)) (PRINC (QUOTE -)))
+		 (T (PRINC (CADR %EX)) (PRINC (QUOTE / ))))
+	   2)
+  (MK-DO do 1)
+  (MK-SEQ
+   (%PPL (APPEND (CADR %EX) (CDDR %EX))
+	 (QUOTE / )
+	 (QUOTE ;)
+	 (QUOTE / )))
+  (MK-ASSIGN 1 := 2)
+  (MK-TEST (TESTTRAPFN T (CDR %EX)))
+  (MK-TRAP 1 (TESTTRAPFN NIL (CDDR %EX)))
+  (MK-ABSTR /( \ 1 /. 2 /))
+  (MK-IN 1 / in/  2)
+  (MK-IND 1 / in/  2)
+  (MK-INA 1 / in/  2)
+  (MK-LET let/  1 / =/  2)
+  (MK-LETREC letrec /  1 / =/  2)
+  (MK-LETREF letref /  1 / =/  2)
+  (MK-DEFTYPE lettype /  (PRINC PPSYM))
+  (MK-ABSTYPE abstype /  (PRINC PPSYM))
+  (MK-ABSRECTYPE absrectype /  (PRINC PPSYM))
+  (MK-BEGIN begin/  1)
+  (MK-END end/  1))
+VALUE)
+% SYMBS : copy in lapld.fls %
+
+(SETQ CMNTCHR (QUOTE %))
+(SETQ CTRLDSYM @∧)
+
+(SETQ SPACE (QUOTE / ))
+(SETQ CR @/
+)
+(SETQ LF @/
+)
+(SETQ TAB @/	)
+(SETQ LPAREN @/()
+(SETQ RPAREN @/))
+(SETQ PERIOD @/.)
+(SETQ COMMA @/,)
+(SETQ COLON @/:)
+(SETQ SCOLON @/;)
+(SETQ LBRKT @/[)
+(SETQ RBRKT @/])
+
+(SETQ ENDCNRTOK @/")
+(SETQ ANTICNRTOK @/↑)
+(SETQ CONDLTOK @/=/>)
+(SETQ ELSETOK @/|)
+(SETQ LAMTOK @/\)
+(SETQ EQTOK @/=/=)
+(SETQ INEQTOK @/</<)
+(SETQ CONJTOK @/&)
+(SETQ IMPTOK @IMP)
+(SETQ QUANTTOK @/!)
+(SETQ TRUTHTOK @TRUTH)
+(SETQ FIXTOK @FIX)
+(SETQ BOTTOK @UU)
+(SETQ TTOK @TT)
+(SETQ FTOK @FF)
+(SETQ ARROWTOK @/-/>)
+(SETQ SUMTOK @/+)
+(SETQ PRODTOK @/#)
+(SETQ NULLTYPTOK @/.)
+
+
+(SETQ SPECTOKS @(/: /( /) /' /↑   /=/> /, /\ /.   /=/= /</< /& IMP /! /"
+                  /[ /] /; /|))
+
+
+(SETQ TMLSYM @;;)
+(SETQ TOKQTSYM @/`)
+(SETQ ESCAPESYM @//)
+(SETQ EXFIXSYM @/$)
+(SETQ DECTMNR @/;;)
+(SETQ NEGSYM @not)
+(SETQ ARROWSYM @/-/>)
+(SETQ PRODSYM @/#)
+(SETQ SUMSYM @/+)
+(SETQ LISTSYM @list)
+(SETQ NULLSYM @/.)
+(SETQ CNRSYM @/")
+(SETQ ENDCNRSYM @/")
+(SETQ QUOTESYM @/`/`)
+(SETQ TCNSTSYM @/←)
+(SETQ MULSYM @/*)
+(SETQ DIVSYM @//)
+(SETQ PLUSSYM @/+)
+(SETQ MNSSYM @/-)
+(SETQ CONCSYM @/@)
+(SETQ EQSYM @/=)
+(SETQ LTSYM @/<)
+(SETQ GTSYM @/>)
+(SETQ CONJSYM @/&)
+(SETQ DISJSYM @or)
+(SETQ CONDLSYM @/=/>)
+(SETQ LAMSYM @/\)
+(SETQ ASGNSYM @/:/=)
+(SETQ LABSYM @/:/:)
+(SETQ ELSESYM @/|)
+(SETQ TP1SYM @/?)
+(SETQ TP3SYM @/?/?)
+(SETQ TP5SYM @/?/\)
+(SETQ TP2SYM @/!)
+(SETQ TP4SYM @/!/!)
+(SETQ TP6SYM @/!/\)
+
+(SETQ TPSYMS (LIST TP1SYM TP2SYM TP3SYM TP4SYM TP5SYM TP6SYM))
+
+
+(SETQ SPECSYMS @(/: /( /) /# /-/> /, /. /[ /] /; /;/; /:/= /:/: /|  
+     /" /% /$ /` /`/` /← /* // /+ /- /@ /= /< /> /& /=/> /\
+     /? /?/? /?/\ /! /!/! /!\))
+
+(SETQ RSVDWDS @(let letref letrec
+                deftype lettype letrectype abstype absrectype
+                where whereref whererec and with in
+                fail failwith or not
+                test then loop else))
+
+
+
+(SETQ TERMCONSTRS @(mk=vartok mk=consttok mk=comb mk=pair mk=abs 
+                    mk=empty mk=cond mk=typed))
+
+(SETQ WFFCONSTRS @(mk=equiv mk=inequiv mk=imp mk=conj mk=quant 
+                   mk=truth))
+
+(SETQ DECLNCONSTRS @(MK-LET MK-LETREC MK-LETREF MK-DEFTYPE 
+                     MK-DEFRECTYPE MK-ABSTYPE MK-ABSRECTYPE))
+
+(SETQ EXPRCONSTRS @(MK-BOOLCONST MK-INTCONST MK-TOKCONST MK-VAR
+          MK-APPN MK-ABSTR MK-DUPL MK-EMPTY MK-NIL MK-CONDE
+          MK-FAIL  MK-BINOP MK-UNOP
+          MK-ASSIGN MK-LIST MK-SEQ MK-DO MK-TRAP MK-TEST  
+          MK-STRAINT MK-IN MK-IND MK-QUOT MK-TYQUOT))
+
+
+(SETQ TOKBEARER @"<token>")
+(SETQ TOKLBEARER @"<token list>")
+(SETQ NILREP @/%NIL)
+(SETQ LASTVALNAME @it)
+(SETQ LINKCOUNT 0)
+(SETQ PPSYM @" ... ")
+
+% TML %
+
+(DEFPROP RCONS
+ (LAMBDA (X R) (RCONS2 X (RCONS1 R)))
+EXPR)
+
+(DEFPROP RCONS1
+ (LAMBDA(R)
+  (COND	((ATOM R) (ERROR (QUOTE "BAD TOP/-LEVEL ENV")))
+	((FULL (CAR R) (CAR R)) (CONS (CONS SECRET (CAR R)) (CDR R)))
+	(T R)))
+EXPR)
+
+(DEFPROP FULL
+ (LAMBDA(Y Z)
+  (COND	((OR (ATOM Y) (ATOM Z)) (NOT (EQ Y SECRET)))
+	((FULL (CAR Y) (CDR Z)))))
+EXPR)
+
+(DEFPROP RCONS2
+ (LAMBDA(X R)
+  (PROG	(Y YD Z ZD)
+	(SETQ Y (SETQ YD (CAR R)))
+   L	(COND ((ATOM YD) (GO M)))
+	(COND ((EQ (CAR Y) SECRET)
+	       (SETQ Z Y)
+	       (SETQ ZD YD)
+	       (SETQ Y (CDR Y)))
+	      (T (SETQ Y (CAR Y))))
+	(SETQ YD (CDR YD))
+	(GO L)
+   M	(SETQ ZD (CDR ZD))
+	(COND ((ATOM ZD) (RPLACA Z X) (RETURN R)))
+	(SETQ X (CONS SECRET X))
+	(GO M)))
+EXPR)
+
+(DEFPROP DECPT
+ (LAMBDA NIL
+  (MEMQ	(CAR %PT)
+	(QUOTE
+	 (MK/-LET MK/-LETREF MK/-LETREC MK/-ABSTYPE MK/-ABSRECTYPE))))
+EXPR)
+
+(DEFPROP DEFTYPT
+ (LAMBDA NIL (EQ (CAR %PT) (QUOTE MK/-DEFTYPE)))
+EXPR)
+
+(DEFPROP MLEVAL
+ (LAMBDA(%PR)
+  (PROG	(V)
+	(SETQ V ((LAMBDA (%E) (EVAL %PR)) %%E))
+	(UPDATETYPES)
+	(COND ((DEFTYPT))
+	      ((DECPT) (SETQ V (CONS (BVPAT %PT) V))
+		       (SETQ %%P (RCONS (CAR V) %%P))
+		       (SETQ %%E (RCONS (CDR V) %%E)))
+	      (T (PUTPROP LASTVALNAME V (QUOTE MLVAL))
+		 (PUTPROP LASTVALNAME %TY (QUOTE MLTYPE))))
+	(RETURN V)))
+EXPR)
+
+(DEFPROP TML
+ (LAMBDA NIL
+  (PROG	(B)
+	(INITFN
+	 (FUNCTION (LAMBDA NIL (PROG2 (PROMPT 52) (INITFN NIL)))))
+	(PROMPT 43)
+	(SETQ B (ERRSET (TMLLOOPBODY)))
+	(PROMPT 52)
+	(INITFN NIL)
+	(ERR B)))
+EXPR)
+
+(DEFPROP TMLTILLEOF
+ (LAMBDA NIL (OR (EQ (ERRSET (TMLLOOP)) (QUOTE $EOF$)) (ERR %F)))
+EXPR)
+
+(DEFPROP TMLLOOP
+ (LAMBDA NIL (PROG (%PT %TY %PR %VAL) (TMLLOOPBODY)))
+EXPR)
+
+(DEFPROP TMLLOOPBODY
+ (LAMBDA NIL
+  (PROG	(IBASE BASE *NOPOINT)
+	(SETQ IBASE 12)
+	(SETQ BASE 12)
+	(SETQ *NOPOINT T)
+   L	(AND PRFLAG (TOP%F) (TERPRI))
+	(AND (TOP1 (FUNCTION PARSEML)) (TOP%F) (PRML1))
+	(GO L)))
+EXPR)
+
+(DEFPROP TOP%F
+ (LAMBDA NIL (MEMQ %F (QUOTE (NIL mlin))))
+EXPR)
+
+(DEFPROP THEORYLD%F
+ (LAMBDA NIL (MEMQ %F (QUOTE (newparent draftin))))
+EXPR)
+
+(DEFPROP READQUOT
+ (LAMBDA NIL
+  (PROG	(%PT %TY %PR %VAL)
+	(COND ((NOT (EQ (READCH) (QUOTE /")))
+	       (ERROR (QUOTE READQUOT)))
+	      ((TOP1 (FUNCTION PARSEQUOT)) (RETURN (CONS %VAL %TY)))
+	      ((ERR (QUOTE READOL))))))
+EXPR)
+
+(DEFPROP PARSEQUOT
+ (LAMBDA (N) (LIST (QUOTE MK/-QUOT) (PARSEOL N)))
+EXPR)
+
+(DEFPROP PRML1
+ (LAMBDA NIL
+  (COND	((NULL PRFLAG) (PRINC (QUOTE /.)))
+	((DEFTYPT))
+	((DECPT) (PRLET (CAR %VAL) (CDR %VAL) %TY))
+	(T (PRVALTY %VAL %TY))))
+EXPR)
+
+(DEFPROP TOP1
+ (LAMBDA(PARSEFN)
+  (PROG2 (INITLEAN)
+	 (AND ((LAMBDA(B)
+		(COND ((NOT (ATOM B)))
+		      ((EQ B CTRLDSYM) NIL)
+		      ((ERR B))))
+	       (ERRSET (GNT)))
+	      (ERRTRAP (QUOTE %PT) PARSEFN 0)
+	      (OR (NOT (ISTMLOP %PT))
+		  (PROG2 (ERRTRAP (QUOTE %VAL) (FUNCTION EVTMLOP) %PT)
+			 NIL))
+	      (OR (THEORYLD%F)
+		  (ERRTRAP (QUOTE %TY) (FUNCTION TYPECHECK) %PT))
+	      (ERRTRAP (QUOTE %PR) (FUNCTION TRAN) %PT)
+	      (ERRTRAP (QUOTE %VAL) (FUNCTION MLEVAL) %PR))))
+EXPR)
+
+(DEFPROP ERRTRAP
+ (LAMBDA(ID %FN %ARG)
+  (PROG	(B)
+	(SETQ B (ERRSET (APPLY %FN (LIST %ARG))))
+	(COND ((NOT (ATOM B)) (SET ID (CAR B)) (RETURN T))
+	      ((AND (EQ ID (QUOTE %PT)) (EQ B CTRLDSYM)) (RETURN NIL))
+	      ((THEORYLD%F) (ERR (SELECTQ B ($EOF$ B) %F)))
+	      ((EQ %F (QUOTE mlin))
+	       (AND (EQ B (QUOTE mlin)) (ERR B))))
+	(PRINC
+	 (ASSOC1 ID
+		 (QUOTE
+		  ((%PT . PARSE) (%TY . TYPECHECK)
+				 (%PR . TRANSLATION)
+				 (%VAL . EVALUATION)))))
+	(PRINX (QUOTE / FAILED/ ) (AND B (PRINC B)))
+	(AND (EQ %F (QUOTE mlin))
+	     (ERR (PRINC (QUOTE / DURING/ mlin/ ))))
+	(TERPRI)))
+EXPR)
+
+(DEFPROP ISTMLOP
+ (LAMBDA (%PT) (GET (CAR %PT) (QUOTE TMLOP)))
+EXPR)
+
+(DEFPROP EVTMLOP
+ (LAMBDA(%PT)
+  (SELECTQ
+   (CAR %PT)
+   (MK/-BEGIN
+    (begin (COND ((NULL (CDR %PT)) (QUOTE %NONAME)) ((CADR %PT)))))
+   (MK/-END
+    (end
+     (COND ((NULL (CDR %PT))
+	    (COND (%DUMP (CDAR %DUMP)) ((ERR (QUOTE end)))))
+	   ((ASSOC1 (CADR %PT) %DUMP))
+	   ((ERR (JUXT (QUOTE end/ ) (CADR %PT)))))))
+   (ERROR (CONS (CAR %PT) (QUOTE (NOT A TMLOP))))))
+EXPR)
+
+(DEFPROP begin
+ (LAMBDA(TOK)
+  (PROG	NIL
+	(PUSHQ (LIST TOK %SECTIONS %%P %%E %EMT %TEMT %DUMP) %DUMP)
+	(SETQ %SECTIONS T)
+	(SETQ %%P (CONS INITSECTION %%P))
+	(SETQ %%E (CONS INITSECTION %%E))))
+EXPR)
+
+(DEFPROP end
+ (LAMBDA(SEC)
+  (PROG	(TENV)
+	(SETQ TENV (CAR (CDDDDR SEC)))
+	(COND
+	 ((ATOM
+	   (ERRSET (ABSSCOPECHK (GET LASTVALNAME (QUOTE MLTYPE)))))
+	  (ERR (QUOTE end))))
+	(SETQ %SECTIONS (CAR SEC))
+	(SETQ %%P (CADR SEC))
+	(SETQ %%E (CADDR SEC))
+	(SETQ %EMT (CADDDR SEC))
+	(SETQ %TEMT (CAR (CDDDDR SEC)))
+	(SETQ %DUMP (CADR (CDDDDR SEC)))))
+EXPR)
+
+% OPP %
+
+(DEFPROP POP
+ (LAMBDA(CPL)
+  (PROG	(X)
+	(SETQ PARSEDEPTH (ADD1 PARSEDEPTH))
+	(GNT)
+	(SETQ ARG1
+	      (COND ((NOT
+		      (OR (NUMBERP PTOKEN)
+			  (NULL (SETQ X (GET PTOKEN LANG1)))))
+		     (EVAL X))
+		    (T (EVAL ATOMRTN))))
+   L	(SETQ X (COND ((NUMBERP TOKEN) NIL) (T (GET TOKEN LANGLP))))
+	(COND ((AND (NULL X) (NOT (LESSP CPL JUXTLEVEL)))
+	       (SETQ PARSEDEPTH (SUB1 PARSEDEPTH))
+	       (RETURN ARG1))
+	      ((NULL X) (PROG2 (SETQ ARG1 (EVAL JUXTRTN)) (GO L)))
+	      ((NOT (LESSP CPL X))
+	       (SETQ PARSEDEPTH (SUB1 PARSEDEPTH))
+	       (RETURN ARG1))
+	      (T NIL))
+	(COND
+	 ((MEMQ (CAR ARG1) DECLNCONSTRS)
+	  (FAIL (QUOTE (NON TOP LEVEL DECLN MUST HAVE in CLAUSE)))))
+	(SETQ X (GET TOKEN LANG2))
+	(COND
+	 ((NULL X)
+	  (FAIL
+	   (CONS TOKEN (QUOTE (IS UNDEFINED OPTR (SYSTEM ERROR)))))))
+	(GNT)
+	(SETQ ARG1 (EVAL X))
+	(GO L)))
+EXPR)
+
+(DEFPROP UNOP
+ (LAMBDA (OP CODE) (PUTPROP OP CODE LANG1))
+EXPR)
+
+(DEFPROP BNOP
+ (LAMBDA (OP CODE) (PUTPROP OP CODE LANG2))
+EXPR)
+
+(DEFPROP BINOP
+ (LAMBDA(OP LP CODE)
+  (PROG2 (PUTPROP OP CODE LANG2) (PUTPROP OP LP LANGLP)))
+EXPR)
+
+(DEFPROP CHECK
+ (LAMBDA(TOK RSLT MSG)
+  (COND ((EQ TOK TOKEN) (PROG2 (GNT) RSLT)) (T (FAIL MSG))))
+EXPR)
+
+(DEFPROP FAIL
+ (LAMBDA(MSG)
+  (PROG	NIL
+	(PRINT MSG)
+	(PRINT (QUOTE SKIPPING:))
+	(PRINC PTOKEN)
+	(PRINC SPACE)
+	(PRINC TOKEN)
+	(PRINC SPACE)
+   L	(COND
+	 ((EQ TOKEN TMLSYM)
+	  (INITLEAN)
+	  (EQSETUP)
+	  (PERSETUP)
+	  (ERR (QUOTE ***))))
+	(PRINC (GNT))
+	(PRINC SPACE)
+	(GO L)))
+EXPR)
+
+% SIMPL %
+
+(DEFPROP MARK
+ (LAMBDA(vars %TYVL p)
+  ((LAMBDA (%L) (MARK1 p))
+   (MAPCAR (FUNCTION (LAMBDA (X) (varPAIR (QUOTE noninstvar) X)))
+	   vars)))
+EXPR)
+
+(DEFPROP MARK1
+ (LAMBDA(p)
+  (SELECTQ
+   (CAR p)
+   (const (TRIPLE (QUOTE const) (CADR p) (MARKTY (CDDR p))))
+   (var
+    (COND ((ASSOC1 p %L))
+	  (T (CDAR (SETQ %L (CONS (varPAIR (QUOTE instvar) p) %L))))))
+   (comb (MARK2 p))
+   (abs
+    ((LAMBDA (%L) (MARK2 p))
+     (CONS (varPAIR (QUOTE bvar) (CAADR p)) %L)))
+   (ERROR (QUOTE MARK))))
+EXPR)
+
+(DEFPROP MARK2
+ (LAMBDA(p)
+  (TRIPLE (CAR p)
+	  (CONS (MARK1 (CAADR p)) (MARK1 (CDADR p)))
+	  (MARKTY (CDDR p))))
+EXPR)
+
+(DEFPROP varPAIR
+ (LAMBDA (TOK X) (CONS X (TRIPLE TOK X (MARKTY (CDDR X)))))
+EXPR)
+
+(DEFPROP MARKTY
+ (LAMBDA (TY) (CONSMONOP (MTY TY) TY))
+EXPR)
+
+(DEFPROP CONSMONOP
+ (LAMBDA(MTY TY)
+  (COND ((EQ MTY (QUOTE mono)) (CONS (QUOTE mono) TY)) (T MTY)))
+EXPR)
+
+(DEFPROP MTY
+ (LAMBDA(TY)
+  (SELECTQ
+   (CAR TY)
+   (consttype (QUOTE mono))
+   (vartype (COND ((MEMQ TY %TYVL) (QUOTE mono)) (T TY)))
+   ((sumtype prodtype funtype)
+    ((LAMBDA(MTY1 MTY2)
+      (COND ((AND (EQ MTY1 (QUOTE mono)) (EQ MTY2 (QUOTE mono)))
+	     (QUOTE mono))
+	    (T
+	     (TRIPLE (CAR TY)
+		     (CONSMONOP MTY1 (CADR TY))
+		     (CONSMONOP MTY2 (CDDR TY))))))
+     (MTY (CADR TY))
+     (MTY (CDDR TY))))
+   (ERROR (QUOTE MARKTY))))
+EXPR)
+
+(DEFPROP ISMONO
+ (LAMBDA (p) (EQ (CADDR p) (QUOTE mono)))
+EXPR)
+
+(DEFPROP MATCH
+ (LAMBDA(p t)
+  (SELECTQ
+   (CAR p)
+   (const (AND (EQ (CADR p) (CADR t)) (TYMATCH (CDDR p) (CDDR t))))
+   (comb
+    (AND (EQ (CAR t) (QUOTE comb))
+	 (OR (NOT (ISMONO p)) (EQ (CDDDR p) (CDDR t)))
+	 (MATCH (CAADR p) (CAADR t))
+	 (MATCH (CDADR p) (CDADR t))))
+   (abs
+    (AND (EQ (CAR t) (QUOTE abs))
+	 (COND ((ISMONO p) (EQ (CDDDR p) (CDDR t)))
+	       (T (TYMATCH (CDDR (CAADR p)) (CDDR (CAADR t)))))
+	 ((LAMBDA (BVPAIRS CBL) (MATCH (CDADR p) (CDADR t)))
+	  (CONS (CONS (CAADR p) (CAADR t)) BVPAIRS)
+	  (CONS (CAADR t) CBL))))
+   (bvar (EQ (ASSOC p BVPAIRS) (REVASSOC t BVPAIRS)))
+   (noninstvar (AND (EQ (CADR p) t) (NOT (MEMQ t CBL))))
+   (instvar
+    (COND
+     ((NOT (FREEIN CBL t))
+      ((LAMBDA(u)
+	(COND
+	 (u (ALPHACONV t u))
+	 ((TYMATCH (CDDR p) (CDDR t))
+	  (SETQ INSTLIST (CONS (CONS t p) INSTLIST)))))
+       (REVASSOC1 p INSTLIST)))))
+   (ERROR (QUOTE MATCH))))
+EXPR)
+
+(DEFPROP TYMATCH
+ (LAMBDA(MTY TY)
+  (SELECTQ
+   (CAR MTY)
+   (mono (EQ (CDR MTY) TY))
+   (vartype
+    ((LAMBDA(TY')
+      (COND (TY' (EQ TY TY'))
+	    (T (SETQ INSTTYLIST (CONS (CONS TY MTY) INSTTYLIST)))))
+     (REVASSOC1 MTY INSTTYLIST)))
+   (sumtype (TYMATCH2 (CDR MTY) (destsumtype TY)))
+   (prodtype (TYMATCH2 (CDR MTY) (destprodtype TY)))
+   (funtype (TYMATCH2 (CDR MTY) (destfuntype TY)))
+   (ERROR (QUOTE TYMATCH))))
+EXPR)
+
+(DEFPROP TYMATCH2
+ (LAMBDA(X Y)
+  (AND (TYMATCH (CAR X) (CAR Y)) (TYMATCH (CDR X) (CDR Y))))
+EXPR)
+
+(DEFPROP MATCHFN
+ (LAMBDA(%E)
+  (PROG	(INSTLIST INSTTYLIST BVPAIRS CBL)
+	(OR (MATCH (CDR %E) (CAR %E)) (ERR (QUOTE termmatch)))
+	(MAPC
+	 (FUNCTION
+	  (LAMBDA(tp)
+	   (RPLACD
+	    tp
+	    ((LAMBDA(t x)
+	      (COND ((eqtype t x) x)
+		    (T (mkvar (CADR (variant x NIL)) (CDDR t)))))
+	     (CAR tp)
+	     (CADR (CDR tp))))))
+	 INSTLIST)
+	(RETURN (CONS INSTLIST INSTTYLIST))))
+EXPR)
+
+(DEFPROP MATCHCLOSURE
+ (LAMBDA(vars tyvars p)
+  (CONS (FUNCTION MATCHFN) (MARK vars tyvars p)))
+EXPR)
+
+% OL3 %
+
+(DEFPROP eqtype
+ (LAMBDA (T1 T2) (EQ (CDDR T1) (CDDR T2)))
+EXPR)
+
+(DEFPROP genvar
+ (LAMBDA (TY) (mkvar (GENSYM) TY))
+EXPR)
+
+(DEFPROP equivpair
+ (LAMBDA (TH) (destequiv (CDR TH)))
+EXPR)
+
+(DEFPROP inequivpair
+ (LAMBDA (TH) (destinequiv (CDR TH)))
+EXPR)
+
+(DEFPROP tmfmvars
+ (LAMBDA (TMFM) (ALLVARS (CDR TMFM)))
+EXPR)
+
+(DEFPROP TYPESIN
+ (LAMBDA (%TYL OB) (%TYLIN1 OB))
+EXPR)
+
+(DEFPROP %TYLIN1
+ (LAMBDA(OB)
+  (OR (MEMQ OB %TYL)
+      (SELECTQ (CAR OB)
+	       ((vartype consttype truth) NIL)
+	       ((var const) (%TYLIN1 (CDDR OB)))
+	       ((comb abs) (%TYLIN2 (CADR OB)))
+	       ((quant conj
+		       imp
+		       equiv
+		       inequiv
+		       funtype
+		       prodtype
+		       sumtype)
+		(%TYLIN2 (CDR OB)))
+	       (ERROR (QUOTE TYPESIN)))))
+EXPR)
+
+(DEFPROP %TYLIN2
+ (LAMBDA (X) (OR (%TYLIN1 (CAR X)) (%TYLIN1 (CDR X))))
+EXPR)
+
+(DEFPROP TYVARS
+ (LAMBDA (OB) (PROG (%TYVL) (TYVARS1 OB) (RETURN (REVERSE %TYVL))))
+EXPR)
+
+(DEFPROP TYVARS1
+ (LAMBDA(OB)
+  (SELECTQ (CAR OB)
+	   ((truth consttype))
+	   (vartype (OR (MEMQ OB %TYVL) (SETQ %TYVL (CONS OB %TYVL))))
+	   ((var const) (TYVARS1 (CDDR OB)))
+	   ((comb abs) (TYVARS2 (CADR OB)))
+	   ((quant conj imp equiv inequiv funtype prodtype sumtype)
+	    (TYVARS2 (CDR OB)))
+	   (ERROR (QUOTE TYVARS))))
+EXPR)
+
+(DEFPROP TYVARS2
+ (LAMBDA (OB) (PROG2 (TYVARS1 (CAR OB)) (TYVARS1 (CDR OB))))
+EXPR)
+
+% IOX %
+
+(LAP CLRBFI SUBR)
+  (051000 11 0 0)
+  (POPJ P)
+NIL
+
+
+~↑Z  Specials:  %F, PRFLAG, %FN, %ARGS, %L, %G
+
+~↑Z  Manifest:  CR, LF
+
+~↑Z  FEXPRs:  DIN, NULLIFY
+
+~↑Z  MACROs:  EVLIST, PRINX, MAKE
+
+
+(SETQ %F NIL)
+
+(DE ERR%F (X Y) (PRINX X @": " Y CR LF (ERR %F)))
+
+(DE SLASHIFY (L) (PROG (L1) K (COND
+   ((NULL L) (RETURN (REVERSE L1)))
+   ((SETQ L1 (CONS(CAR L)(CONS @// L1))) (SETQ L (CDR L)) (GO K))
+)))
+
+(DE UNSLASHIFY (L) (PROG (L1) K (COND
+   ((NULL L) (RETURN (REVERSE L1)))
+   ((AND (EQ(CAR L)@//) (NULL(SETQ L (CDR L)))) (ERR @UNSLASHIFY))
+   (T (SETQ L1 (CONS(CAR L)L1)) (SETQ L (CDR L)) (GO K))
+)))
+
+(DE PUSHNCONC (ID X) (SET ID (NCONC (EVAL ID) (LIST X))))
+		~↑Z All values of ID must be special
+
+(DE INQ (X L) (COND ((MEMQ X L) L) ((CONS X L))))
+
+(DE OUTQ (X L) (COND (L (COND
+    ((EQ X (CAR L)) (OUTQ X (CDR L)))
+    ((CONS (CAR L) (OUTQ X (CDR L))))
+))))
+
+(DE MAPAND (F L) (OR (NULL L)
+  (AND (APPLY F (LIST (CAR L))) (MAPAND F (CDR L)))
+))
+
+(DE MAPOR (F L) (AND (NOT(NULL L))
+  (OR (APPLY F (LIST (CAR L))) (MAPOR F (CDR L)))
+))
+
+(DE QEVAL (X) (LIST @QUOTE X))
+
+(DM EVLIST (L) (LIST @EVAL (CONS @LIST (CDR L))))
+
+(DE JUXT (X Y) (implode(NCONC(explode X)(explode Y))))
+
+(DE ASK (Q) (PROG (X L)
+  (PRINX CR LF Q @/?)
+  (PROMPT 32.)
+  (CLRBFI)
+K (COND
+   ((EQ(SETQ X (READCH))CR) (PROMPT 42.) (RETURN(REVERSE L)))
+   ((SETQ L (CONS X L)) (GO K))
+)))
+
+(DE PeekINC () ((LAMBDA (CH) (PROG2 (INC CH T) CH)) (INC NIL NIL)))
+(DE PeekOUTC () ((LAMBDA (CH) (PROG2 (OUTC CH T) CH)) (OUTC NIL NIL)))
+
+(DE ProtectIO (%FN %ARGS) (PROG (ICH OCH B)
+  (SETQ ICH (PeekINC))
+  (SETQ OCH (PeekOUTC))
+  (SETQ B (ERRSET (APPLY %FN %ARGS)))
+  (OR (EQ ICH (PeekINC)) (INC ICH T))
+  (OR (EQ OCH (PeekOUTC)) (OUTC OCH T))
+  (COND ((ATOM B) (ERR B)) (T (RETURN (CAR B))) )
+))
+
+(DF DIN (L) (ProtectIO (FUNCTION (LAMBDA (L) (PROG (DEV X B)
+     (SETQ DEV @DSK:)
+   A (COND
+      ((NULL L) (RETURN @FILES-LOADED))
+      ((ISDEV(SETQ X (CAR L))) (SETQ DEV X) (GO Z))
+     )
+     (OPENERR DEV X)
+   K (COND
+      ((NOT(ATOM(SETQ B (ERRSET(EVAL(READ))))))
+       (COND (PRFLAG (PRINT(CAR B))) (T (PRINC @/:)))
+       (GO K)
+     ))
+     (OR (EQ B @$EOF$) (ERR @DIN))
+     (PRINX (AND PRFLAG (TERPRI)) X @/ LOADED)
+     (TERPRI)
+   Z (SETQ L (CDR L))
+     (GO A)
+  )))
+  (LIST L)
+))
+
+(DE ISDEV (X) (COND
+  ((ATOM X) (EQ @/: (CAR(LAST(EXPLODE X)))))
+  ((EQ(LENGTH X)2) (AND (NUMBERP(CAR X)) (NUMBERP(CADR X))))
+))
+
+(DE ISDSK (F) (ProtectIO (FUNCTION OPENP) (LIST @DSK: F)))
+
+(DE OPENERR (DEV F) (OR (OPENP DEV F) (PROG2
+   (PRINC @"CAN'T FIND ")
+   (SELECTQ %F
+    (draftin (ERR%F @DRAFT (CAR F)))
+    (newparent (ERR%F @THEORY (CAR F)))
+    (ERR%F @FILE F)
+))))
+
+(DE OPENP (DEV F) (PROG (%G %L)
+  (SETQ %L (LIST @INPUT (SETQ %G (GENSYM)) DEV F))
+  (COND
+   ((NOT(ATOM(ERRSET(INC(EVAL %L)NIL)NIL))) (RETURN T))
+   (T (ERRSET(INC %G NIL)NIL) (INC NIL T) (RETURN NIL))
+)))
+
+(DE OPENO (F) (OUTC (EVLIST @OUTPUT (GENSYM) @DSK: F) NIL))
+
+(DE CLOSEI () (INC NIL T))
+(DE CLOSEO () (OUTC NIL T))
+
+(DE OPENCOPY (F) (PROG2 (OPENO F) (COPY F)))
+(DE COPY (F) (AND (OPENP @DSK: F) (COPYTILLEOF)))
+(DE COPYTILLEOF() (ERRSET(PROG() K (TYO(TYI)) (GO K))))
+
+(DM PRINX (L) (CONS @PROG (CONS NIL (MAPCAR
+    (FUNCTION (LAMBDA (A) (COND
+       ((OR (ATOM A) (EQ(CAR A)@QUOTE)) (LIST @PRINC A))
+       ((ATOM (CDR A)) (LIST @COPY (LIST @QUOTE A)))
+       (T A)
+    )))
+    (CDR L)
+))))
+
+(DM MAKE (L) (LIST @PROG2
+  (LIST @OPENO (CADR L))
+  (CONS @PRINX (CDDR L))
+  @(CLOSEO)
+))
+
+(DE CONCAT (F1 F2) (PROG() (OPENCOPY F1) (COPY F2) (CLOSEO)))
+
+(DF NULLIFY (L) (MAPC (FUNCTION NULLIFY1) L))
+(DE NULLIFY1 (F) (OR (NULLP F) (MAKE F)))
+(DE NULLP (F) (OR
+  (NOT (OPENP @DSK: F))
+  (EQ (ERRSET(TYI)) @$EOF$)
+  (PROG2 (CLOSEI) NIL)
+))
+
+(DE SKIPTO (X) (PROG() K (OR (EQ(READCH)X) (GO K))))
+
+(DE FINDP (S) (PROG (S1 S2 X B)
+  (COND
+   ((OR(NULL S)(MEMQ @/" S))
+    (ERR%F @"BAD TOK FOR FINDP" (implode S)))
+  )
+A (SETQ S1 NIL)
+  (SETQ S2 S)
+L (COND
+   (B (SETQ X (CAR B)) (SETQ B (CDR B)))
+   ((EQ (SETQ X (ERRSET(READCH))) @$EOF$) (RETURN NIL))
+   ((SETQ X (CAR X)))
+  )
+  (COND
+   ((EQ X @/") (SETQ B NIL) (SKIPTO @/") (GO A))
+   ((EQ X (CAR S2))
+    (SETQ S1 (CONS X S1))
+    (OR (SETQ S2 (CDR S2)) (RETURN @FOUND))
+   )
+   (S1 (SETQ B (NCONC(CDR(REVERSE S1))(CONS X B))) (GO A))
+  )
+  (GO L)
+))
+
+% DML %
+
+(DEFPROP MKTIDY
+ (LAMBDA(TY)
+  ((LAMBDA (%L %STAR) (MKTIDYUP (MAKETY TY))) NIL (QUOTE *)))
+EXPR)
+
+(DEFPROP MKTIDYUP
+ (LAMBDA(TY)
+  (COND	((ASSOC1 TY %L))
+	((ATOM TY)
+	 (SETQ %L (CONS (CONS TY %STAR) %L))
+	 (SETQ %STAR (READLIST (CONS (QUOTE *) (EXPLODE %STAR))))
+	 (CDAR %L))
+	((SHARECONS (QUOTE MLTYPE) (CAR TY) (MKTIDYUPL (CDR TY))))))
+EXPR)
+
+(DEFPROP MKTIDYUPL
+ (LAMBDA(TYL)
+  (COND
+   (TYL
+    (SHARECONS (QUOTE MLTYPE)
+	       (MKTIDYUP (CAR TYL))
+	       (MKTIDYUPL (CDR TYL))))))
+EXPR)
+
+(DEFPROP DML
+ (LAMBDA(L)
+  ((LAMBDA(FN ARGS BODY MTY)
+    (PROG NIL
+	  (PUTPROP FN (LENGTH ARGS) (QUOTE NUMARGS))
+	  (PUTPROP FN (LIST (QUOTE LAMBDA) ARGS BODY) (QUOTE EXPR))
+	  (PUTPROP FN (MKTIDY MTY) (QUOTE MLTYPE))
+	  (RETURN FN)))
+   (CAR L)
+   (CADR L)
+   (CADDR L)
+   (CADDDR L)))
+FEXPR)
+
+(DEFPROP DML'
+ (LAMBDA(L)
+  ((LAMBDA(FN N LISPFN MTY)
+    (PROG NIL
+	  (PUTPROP FN (CONS LISPFN N) (QUOTE NUMARGS))
+	  (PUTPROP FN (MKTIDY MTY) (QUOTE MLTYPE))
+	  (RETURN FN)))
+   (CAR L)
+   (CADR L)
+   (CADDR L)
+   (CADDDR L)))
+FEXPR)
+
+(DEFPROP DMLC
+ (LAMBDA(L)
+  ((LAMBDA(ID EXP MTY)
+    (PROG NIL
+	  (PUTPROP ID (EVAL EXP) (QUOTE MLVAL))
+	  (PUTPROP ID (MKTIDY MTY) (QUOTE MLTYPE))
+	  (RETURN ID)))
+   (CAR L)
+   (CADR L)
+   (CADDR L)))
+FEXPR)
+
+(DEFPROP DIV
+ (LAMBDA (X Y) (COND ((ZEROP Y) (ERR (QUOTE div))) (T (*QUO X Y))))
+EXPR)
+
+(DEFPROP do
+ (LAMBDA (X) NIL)
+EXPR)
+
+(DEFPROP hd
+ (LAMBDA (X) (HDTL X (QUOTE hd)))
+EXPR)
+
+(DEFPROP tl
+ (LAMBDA (X) (HDTL X (QUOTE tl)))
+EXPR)
+
+(DEFPROP HDTL
+ (LAMBDA(X hdtl)
+  (COND	((NULL X) (ERR hdtl))
+	((ATOM X) (ERROR (CONS X (QUOTE (IS NOT A LIST)))))
+	((SELECTQ hdtl
+		  (hd (CAR X))
+		  (tl (CDR X))
+		  (ERROR (QUOTE HDTL))))))
+EXPR)
+
+(DEFPROP isl
+ (LAMBDA (X) (NOT (isr X)))
+EXPR)
+
+(DEFPROP isr
+ (LAMBDA(X)
+  (COND	((AND (NOT (ATOM X)) (MEMQ (CAR X) (QUOTE (T NIL)))) (CAR X))
+	((ERROR (CONS X (QUOTE (BAD MLSUMTYPE)))))))
+EXPR)
+
+(DEFPROP outl
+ (LAMBDA (X) (COND ((isr X) (ERR (QUOTE outl))) ((CDR X))))
+EXPR)
+
+(DEFPROP outr
+ (LAMBDA (X) (COND ((isr X) (CDR X)) ((ERR (QUOTE outr)))))
+EXPR)
+
+(DEFPROP inl
+ (LAMBDA (X) (CONS NIL X))
+EXPR)
+
+(DEFPROP inr
+ (LAMBDA (X) (CONS T X))
+EXPR)
+
+(DEFPROP explode
+ (LAMBDA(X)
+  (COND ((EQ X EMPTYTOK) NIL) (T (UNSLASHIFY (EXPLODE X)))))
+EXPR)
+
+(DEFPROP implode
+ (LAMBDA(L)
+  (COND	((NULL L) EMPTYTOK)
+	((MAPAND (FUNCTION (LAMBDA (X) (EQ (LENGTH (explode X)) 1)))
+		 L)
+	 (READLIST (SLASHIFY L)))
+	((ERR (QUOTE implode)))))
+EXPR)
+
+(DEFPROP mlinfix
+ (LAMBDA (X) (MLINFIX X (QUOTE PAIRED)))
+EXPR)
+
+(DEFPROP mlcinfix
+ (LAMBDA (X) (MLINFIX X (QUOTE CURRIED)))
+EXPR)
+
+(DEFPROP mlin
+ (LAMBDA(%TOK PRFLAG)
+  (ProtectIO
+   (FUNCTION
+    (LAMBDA(%F)
+     (PROG (B %DUMP)
+	   (SETQ B
+		 (ERRSET
+		  (PROG2 (OPENERR (QUOTE DSK:) (FILEOF %TOK))
+			 (TMLLOOP))))
+	   (AND %DUMP (end (CDAR (LAST %DUMP))))
+	   (AND	(EQ B (QUOTE / DURING/ mlin/ ))
+		(PRINX (QUOTE `) %TOK (QUOTE `) CR LF))
+	   (OR (EQ B (QUOTE $EOF$)) (ERR (QUOTE mlin))))))
+   (LIST (QUOTE mlin))))
+EXPR)
+
+(DEFPROP FILEOF
+ (LAMBDA(TOK)
+  (PROG	(X Y)
+	(SETQ Y (explode TOK))
+   L	(COND ((NULL Y) (RETURN TOK))
+	      ((EQ (CAR Y) (QUOTE /.))
+	       (RETURN
+		(CONS (implode (REVERSE X)) (implode (CDR Y)))))
+	      ((SETQ X (CONS (CAR Y) X)) (SETQ Y (CDR Y)) (GO L)))))
+EXPR)
+
+% GP %
+
+(DEFPROP GENLINK
+ (LAMBDA NIL (CONS (QUOTE link) (SETQ LINKCOUNT (ADD1 LINKCOUNT))))
+EXPR)
+
+(DEFPROP TYCONSTP
+ (LAMBDA (TY) (GET TY (QUOTE CANON)))
+EXPR)
+
+(DEFPROP CONSTP
+ (LAMBDA (TOK) (GET TOK (QUOTE const)))
+EXPR)
+
+(DEFPROP TRIPLE
+ (LAMBDA (X Y Z) (CONS X (CONS Y Z)))
+EXPR)
+
+(DEFPROP STRIP
+ (LAMBDA(TAG X)
+  (COND	((EQ (CAR X) TAG) (CDR X))
+	((ERR
+	  (READLIST (APPEND (EXPLODE (QUOTE dest)) (EXPLODE TAG)))))))
+EXPR)
+
+(DEFPROP REVASSOC
+ (LAMBDA(X L)
+  (PROG	NIL
+	(COND ((NULL L) (RETURN NIL)))
+   A	(COND ((EQ X (CDAR L)) (RETURN (CAR L)))
+	      ((SETQ L (CDR L)) (GO A)))))
+EXPR)
+
+(DEFPROP REVASSOC1
+ (LAMBDA (X L) ((LAMBDA (PR) (COND (PR (CAR PR)))) (REVASSOC X L)))
+EXPR)
+
+(DEFPROP ASSOC1
+ (LAMBDA (X L) ((LAMBDA (PR) (COND (PR (CDR PR)))) (ASSOC X L)))
+EXPR)
+
+(DEFPROP ITLIST
+ (LAMBDA(FN XL X)
+  (PROG	NIL
+	(SETQ XL (REVERSE XL))
+   L	(COND ((NULL XL) (RETURN X))
+	      (T (SETQ X (FN (CAR XL) X))
+		 (SETQ XL (CDR XL))
+		 (GO L)))))
+EXPR)
+
+(DEFPROP XGENSYM
+ (LAMBDA(X)
+  ((LAMBDA(XCOUNT BASE IBASE)
+    (MAKNAM
+     (APPEND (EXPLODE X)
+	     (EXPLODE (SET XCOUNT (ADD1 (EVAL XCOUNT)))))))
+   (READLIST (CONS X (QUOTE (C O U N T))))
+   12
+   12))
+EXPR)
+
+(DEFPROP ADDPROP
+ (LAMBDA (I V P) (CAR (PUTPROP I (CONS V (GET I P)) P)))
+EXPR)
+
+(DEFPROP SELECTQ
+ (LAMBDA(%%%L)
+  (PROG	(%%%X1 %%%X2 %%%X3 %%%X4)
+	(SETQ %%%X1 (EVAL (CAR %%%L)))
+	(SETQ %%%X2 (CDR %%%L))
+   L	(COND ((NULL (CDR %%%X2)) (RETURN (EVAL (CAR %%%X2))))
+	      ((OR (EQ %%%X1
+		       (SETQ %%%X4 (CAR (SETQ %%%X3 (CAR %%%X2)))))
+		   (AND (NOT (ATOM %%%X4)) (MEMQ %%%X1 %%%X4)))
+	       (RETURN
+		(EVAL (LIST (QUOTE COND) (CONS T (CDR %%%X3))))))
+	      (T (SETQ %%%X2 (CDR %%%X2)) (GO L)))))
+FEXPR)
+
+(DEFPROP SELECTQ
+ (NIL . N)
+VALUE)
+
+(DEFPROP CHARSEQ
+ (LAMBDA(CH N)
+  (PROG	(L)
+   LOOP	(COND ((EQ N 0) (RETURN L)))
+	(SETQ L (CONS CH L))
+	(SETQ N (SUB1 N))
+	(GO LOOP)))
+EXPR)
+
+(DEFPROP PACK
+ (LAMBDA(L)
+  (READLIST
+   (ITLIST
+    (FUNCTION
+     (LAMBDA(Y YL)
+      (APPEND
+       (COND ((NUMBERP Y) (SLASHIFY (EXPLODE Y))) (T (EXPLODE Y)))
+       YL)))
+    L
+    NIL)))
+EXPR)
+
+% SHARE %
+
+(DEFPROP SHAREPAIR
+ (LAMBDA (SORT PR) (SHARECONS' SORT (CAR PR) (CDR PR) PR))
+EXPR)
+
+(DEFPROP FORCESHARE
+ (LAMBDA(SORT PR)
+  ((LAMBDA(XREC)
+    (COND
+     (XREC
+      ((LAMBDA(Z)
+	(COND (Z (COND ((EQ Z PR)) ((ERR (QUOTE FORCESHARE)))))
+	      ((RPLACD XREC (CONS (CONS (CDR PR) PR) (CDR XREC))))))
+       (ASSOC1 (CDR PR) (CDR XREC))))
+     ((ADDPROP SORT
+	       (LIST (CAR PR) (CONS (CDR PR) PR))
+	       (QUOTE SHARECONS)))))
+   (ASSOC (CAR PR) (GET SORT (QUOTE SHARECONS)))))
+EXPR)
+
+(DEFPROP SHARECONS
+ (LAMBDA (SORT X Y) (SHARECONS' SORT X Y (CONS X Y)))
+EXPR)
+
+(DEFPROP SHARECONS'
+ (LAMBDA(SORT X Y CELL)
+  (PROG	(XREC Z)
+	(SETQ XREC (ASSOC X (GET SORT (QUOTE SHARECONS))))
+	(COND
+	 (XREC
+	  (RETURN
+	   (COND ((ASSOC1 Y (CDR XREC)))
+		 ((SETQ Z (CONS' X Y CELL))
+		  (RPLACD XREC (CONS (CONS Y Z) (CDR XREC)))
+		  Z)))))
+	(SETQ Z (CONS' X Y CELL))
+	(ADDPROP SORT (LIST X (CONS Y Z)) (QUOTE SHARECONS))
+	(RETURN Z)))
+EXPR)
+
+(DEFPROP CONS'
+ (LAMBDA(X Y CELL)
+  (COND	((AND (EQ X (CAR CELL)) (EQ Y (CDR CELL))) CELL)
+	(T (CONS X Y))))
+EXPR)
+
+(DEFPROP CONDSHAREOB
+ (LAMBDA(SORT OB)
+  (COND ((GET SORT (QUOTE SHARE)) (SHAREOB SORT OB)) (OB)))
+EXPR)
+
+(DEFPROP SHAREOB
+ (LAMBDA(SORT OB)
+  (COND	((DONTSHAREPRED OB) OB)
+	((SHAREPRED OB) (SHAREOB1 SORT OB))
+	(T
+	 (CONS' (SHAREOB SORT (CAR OB)) (SHAREOB SORT (CDR OB)) OB))))
+EXPR)
+
+(DEFPROP SHAREOB1
+ (LAMBDA(SORT OB)
+  (COND	((DONTSHAREPRED OB) OB)
+	(T
+	 (SHARECONS' SORT
+		     (SHAREOB1 SORT (CAR OB))
+		     (SHAREOB1 SORT (CDR OB))
+		     OB))))
+EXPR)
+
+(DEFPROP SHAREPRED
+ (LAMBDA (OB) (DEPTHCHK OB 0 SHAREDEPTH))
+EXPR)
+
+(DEFPROP DONTSHAREPRED
+ (LAMBDA (OB) (OR (ATOM OB) (EQ (CAR OB) (QUOTE QUOTE))))
+EXPR)
+
+(DEFPROP SHARETRIPLE
+ (LAMBDA(SORT X Y)
+  (PROG	(XREC Z)
+	(SETQ XREC (ASSOC X (GET SORT (QUOTE SHARETRIPLE))))
+	(COND
+	 (XREC
+	  (RETURN
+	   (COND ((ASSOC1 Y (CDR XREC)))
+		 ((SETQ Z (TRIPLE SORT X Y))
+		  (RPLACD XREC (CONS (CONS Y Z) (CDR XREC)))
+		  Z)))))
+	(SETQ Z (TRIPLE SORT X Y))
+	(ADDPROP SORT (LIST X (CONS Y Z)) (QUOTE SHARETRIPLE))
+	(RETURN Z)))
+EXPR)
+
+(DEFPROP DEPTHCHK
+ (LAMBDA(OB N1 N2)
+  (COND	((NOT (LESSP N1 N2)) NIL)
+	((ATOM OB) N1)
+	(((LAMBDA (X) (COND (X (DEPTHCHK (CDR OB) (ADD1 X) N2))))
+	  (DEPTHCHK (CAR OB) N1 N2)))))
+EXPR)
+
+% TYPEOL %
+
+(DEFPROP UNIFY
+ (LAMBDA (TY1 TY2) (UNIFYB (TRUNC TY1) (TRUNC TY2)))
+EXPR)
+
+(DEFPROP UNIFYB
+ (LAMBDA(BTY1 BTY2)
+  (COND	((EQUAL BTY1 BTY2))
+	((EQ (CAR BTY1) (QUOTE link))
+	 (COND ((OCCB BTY1 BTY2) NIL) ((RPLACD BTY1 BTY2))))
+	((EQ (CAR BTY2) (QUOTE link))
+	 (COND ((OCCB BTY2 BTY1) NIL) ((RPLACD BTY2 BTY1))))
+	((EQ (CAR BTY1) (CAR BTY2))
+	 (SELECTQ (CAR BTY1)
+		  ((consttype vartype) (EQ (CDR BTY1) (CDR BTY2)))
+		  (AND (UNIFY (CADR BTY1) (CADR BTY2))
+		       (UNIFY (CDDR BTY1) (CDDR BTY2)))))
+	((EQ (CAR BTY1) (QUOTE consttype))
+	 ((LAMBDA (BTY) (AND BTY (UNIFYB BTY BTY2)))
+	  (GET (CDR BTY1) (QUOTE EQTYPE))))
+	((EQ (CAR BTY2) (QUOTE consttype))
+	 ((LAMBDA (BTY) (AND BTY (UNIFYB BTY1 BTY)))
+	  (GET (CDR BTY2) (QUOTE EQTYPE))))))
+EXPR)
+
+(DEFPROP TRUNC
+ (LAMBDA(TY)
+  (COND	((AND (EQ (CAR TY) (QUOTE link)) (NOT (ATOM (CDR TY))))
+	 (TRUNC (CDR TY)))
+	(TY)))
+EXPR)
+
+(DEFPROP OCC
+ (LAMBDA (V TY) (OCCB V (TRUNC TY)))
+EXPR)
+
+(DEFPROP OCCB
+ (LAMBDA(V BTY)
+  (OR (EQ V BTY)
+      (SELECTQ (CAR BTY)
+	       ((link consttype vartype) NIL)
+	       (OR (OCC V (CADR BTY)) (OCC V (CDDR BTY))))))
+EXPR)
+
+(DEFPROP QUOTCH
+ (LAMBDA(%OB)
+  (PROG	(X %BVL %VTYL)
+	(SETQ X (QTRAP (ERRSET (QTCH (EVAL (CAR %OB))))))
+	(MAPC (FUNCTION
+	       (LAMBDA(VTY)
+		(OR (GET (CAR VTY) (QUOTE STICKYTYPE))
+		    (PUTPROP (CAR VTY)
+			     (CANONTY (CDR VTY))
+			     (QUOTE STICKYTYPE)))))
+	      %VTYL)
+	(RETURN X)))
+FEXPR)
+
+(DEFPROP TYQUOTCH
+ (LAMBDA (%OB) (QTRAP (ERRSET (EVAL (CAR %OB)))))
+FEXPR)
+
+(DEFPROP QTRAP
+ (LAMBDA(X)
+  (COND ((ATOM X) (ERR (JUXT X (QUOTE / IN/ QUOTATION)))) ((CAR X))))
+EXPR)
+
+(DEFPROP QTCH
+ (LAMBDA(OB)
+  (SELECTQ (CAR OB)
+	   (antiquot (CDR OB))
+	   ((quant imp conj equiv inequiv)
+	    (TRIPLE (CAR OB) (QTCH (CADR OB)) (QTCH (CDDR OB))))
+	   (truth OB)
+	   ((abs comb)
+	    (TRIPLE (CAR OB)
+		    (CONS (QTCH (CAADR OB)) (QTCH (CDADR OB)))
+		    (CANONTY (CDDR OB))))
+	   (var (mkrealvar (CADR OB) (CANONTY (CDDR OB))))
+	   (const (mkconst (CADR OB) (CANONTY (CDDR OB))))
+	   (ERR (QUOTE JUNKOB))))
+EXPR)
+
+(DEFPROP CANONTY
+ (LAMBDA(TY)
+  (SELECTQ (CAR TY)
+	   (link
+	    (COND ((ATOM (CDR TY)) (ERR (QUOTE TYPES/ INDETERMINATE)))
+		  ((CANONTY (CDR TY)))))
+	   ((consttype vartype) TY)
+	   ((sumtype prodtype funtype)
+	    (mktype (CAR TY) (CANONTY (CADR TY)) (CANONTY (CDDR TY))))
+	   (ERR (QUOTE JUNKTYPE))))
+EXPR)
+
+(DEFPROP OMUTANT
+ (LAMBDA (TY) (PROG (%L) (RETURN (OMUTANT1 TY))))
+EXPR)
+
+(DEFPROP OMUTANT1
+ (LAMBDA(TY)
+  (SELECTQ
+   (CAR TY)
+   (vartype
+    (COND ((ASSOC1 TY %L)) ((CDAR (PUSHQ (CONS TY (GENLINK)) %L)))))
+   ((vartype consttype) TY)
+   (TRIPLE (CAR TY) (OMUTANT1 (CADR TY)) (OMUTANT1 (CDDR TY)))))
+EXPR)
+
+% LIS %
+
+(DEFPROP twoof
+ (LAMBDA(L)
+  (COND	((AND L (CDR L)) (CONS (CAR L) (CADR L)))
+	((ERR (QUOTE twoof)))))
+EXPR)
+
+(DEFPROP threeof
+ (LAMBDA(L)
+  (COND	((AND L (CDR L) (CDDR L))
+	 (CONS (CAR L) (CONS (CADR L) (CADDR L))))
+	((ERR (QUOTE threeof)))))
+EXPR)
+
+(DEFPROP flat
+ (LAMBDA (LL) (APPLY (FUNCTION APPEND) LL))
+EXPR)
+
+(DEFPROP map
+ (LAMBDA (%%F L) (MAPCAR (FUNCTION (LAMBDA (X) (AP %%F X))) L))
+EXPR)
+
+(DEFPROP exists
+ (LAMBDA(P L)
+  (PROG	NIL
+   K	(COND ((NULL L) (RETURN NIL))
+	      ((AP P (CAR L)) (RETURN T))
+	      (T (SETQ L (CDR L)) (GO K)))))
+EXPR)
+
+(DEFPROP forall
+ (LAMBDA(P L)
+  (PROG	NIL
+   K	(COND ((NULL L) (RETURN T))
+	      ((AP P (CAR L)) (SETQ L (CDR L)) (GO K))
+	      ((RETURN NIL)))))
+EXPR)
+
+(DEFPROP revitlist
+ (LAMBDA(F L X)
+  (PROG	NIL
+   K	(COND ((NULL L) (RETURN X)))
+	(SETQ X (AP (AP F (CAR L)) X))
+	(SETQ L (CDR L))
+	(GO K)))
+EXPR)
+
+(DEFPROP find
+ (LAMBDA(P L)
+  (PROG	NIL
+   K	(COND ((NULL L) (ERR (QUOTE fail)))
+	      ((AP P (CAR L)) (RETURN (CAR L)))
+	      (T (SETQ L (CDR L)) (GO K)))))
+EXPR)
+
+(DEFPROP tryfind
+ (LAMBDA(%%F %L)
+  (PROG	(B)
+   K	(COND ((NULL %L) (ERR (QUOTE fail))))
+	(SETQ B (ERRSET (AP %%F (CAR %L))))
+	(COND ((NOT (ATOM B)) (RETURN (CAR B)))
+	      (T (SETQ %L (CDR %L)) (GO K)))))
+EXPR)
+
+(DEFPROP filter
+ (LAMBDA(P L)
+  (PROG	(R)
+   K	(COND ((NULL L) (RETURN (REVERSE R)))
+	      ((AP P (CAR L)) (SETQ R (CONS (CAR L) R))))
+	(SETQ L (CDR L))
+	(GO K)))
+EXPR)
+
+(DEFPROP mapfilter
+ (LAMBDA(%%F %L)
+  (PROG	(B R)
+   K	(COND ((NULL %L) (RETURN (REVERSE R))))
+	(SETQ B (ERRSET (AP %%F (CAR %L))))
+	(COND ((NOT (ATOM B)) (SETQ R (CONS (CAR B) R))))
+	(SETQ %L (CDR %L))
+	(GO K)))
+EXPR)
+
+% OL1 %
+
+(DEFPROP isquant
+ (LAMBDA (w) (EQ (CAR w) (QUOTE quant)))
+EXPR)
+
+(DEFPROP isimp
+ (LAMBDA (w) (EQ (CAR w) (QUOTE imp)))
+EXPR)
+
+(DEFPROP isconj
+ (LAMBDA (w) (EQ (CAR w) (QUOTE conj)))
+EXPR)
+
+(DEFPROP isequiv
+ (LAMBDA (w) (EQ (CAR w) (QUOTE equiv)))
+EXPR)
+
+(DEFPROP isinequiv
+ (LAMBDA (w) (EQ (CAR w) (QUOTE inequiv)))
+EXPR)
+
+(DEFPROP istruth
+ (LAMBDA (w) (EQ (CAR w) (QUOTE truth)))
+EXPR)
+
+(DEFPROP istype
+ (LAMBDA(prop ty)
+  (COND	((EQ (CAR ty) prop))
+	((EQ (CAR ty) (QUOTE consttype))
+	 (AND (SETQ ty (GET (CDR ty) (QUOTE EQTYPE)))
+	      (istype prop ty)))))
+EXPR)
+
+(DEFPROP issumtype
+ (LAMBDA (ty) (istype (QUOTE sumtype) ty))
+EXPR)
+
+(DEFPROP isprodtype
+ (LAMBDA (ty) (istype (QUOTE prodtype) ty))
+EXPR)
+
+(DEFPROP isfuntype
+ (LAMBDA (ty) (istype (QUOTE funtype) ty))
+EXPR)
+
+(DEFPROP isconsttype
+ (LAMBDA (ty) (EQ (CAR ty) (QUOTE consttype)))
+EXPR)
+
+(DEFPROP isvartype
+ (LAMBDA (ty) (EQ (CAR ty) (QUOTE vartype)))
+EXPR)
+
+(DEFPROP isabs
+ (LAMBDA (t) (EQ (CAR t) (QUOTE abs)))
+EXPR)
+
+(DEFPROP iscomb
+ (LAMBDA (t) (EQ (CAR t) (QUOTE comb)))
+EXPR)
+
+(DEFPROP isvar
+ (LAMBDA (t) (EQ (CAR t) (QUOTE var)))
+EXPR)
+
+(DEFPROP isconst
+ (LAMBDA (t) (EQ (CAR t) (QUOTE const)))
+EXPR)
+
+(DEFPROP destaform
+ (LAMBDA(w)
+  (SELECTQ (CAR w)
+	   (equiv (CONS %mkequivclosure (CDR w)))
+	   (inequiv (CONS %mkinequivclosure (CDR w)))
+	   (ERR (QUOTE destaform))))
+EXPR)
+
+(DEFPROP mkCOND
+ (LAMBDA(ty)
+  (mkconst (QUOTE COND)
+	   (mk=funtype (GET (QUOTE trtype) (QUOTE MLVAL))
+		       (mk=funtype ty (mk=funtype ty ty)))))
+EXPR)
+
+(DEFPROP mkcond
+ (LAMBDA(tr t1 t2)
+  (COND	((AND (EQ (CDDR tr) (GET (QUOTE trtype) (QUOTE MLVAL)))
+	      (EQ (CDDR t1) (CDDR t2)))
+	 (mkcomb (mkcomb (mkcomb (mkCOND (CDDR t1)) tr) t1) t2))
+	((ERR (QUOTE mkcond)))))
+EXPR)
+
+(DEFPROP mkPAIR
+ (LAMBDA(ty1 ty2)
+  (mkconst (QUOTE PAIR)
+	   (mk=funtype ty1 (mk=funtype ty2 (mk=prodtype ty1 ty2)))))
+EXPR)
+
+(DEFPROP mkpair
+ (LAMBDA (t1 t2) (mkcomb (mkcomb (mkPAIR (CDDR t1) (CDDR t2)) t1) t2))
+EXPR)
+
+(DEFPROP destcond
+ (LAMBDA(t)
+  (PROG	(tr t1 t2)
+	(COND
+	 ((AND (iscomb t)
+	       (PROG2 (SETQ t2 (CDADR t)) (iscomb (SETQ t (CAADR t))))
+	       (PROG2 (SETQ t1 (CDADR t)) (iscomb (SETQ t (CAADR t))))
+	       (PROG2 (SETQ tr (CDADR t))
+		      (EQ (CADR (CAADR t)) (QUOTE COND))))
+	  (RETURN (CONS tr (CONS t1 t2)))))
+	(ERR (QUOTE destcond))))
+EXPR)
+
+(DEFPROP destpair
+ (LAMBDA(t)
+  (PROG	(t1 t2 ty)
+	(SETQ ty (CDDR t))
+	(COND ((NOT (isprodtype ty)) (ERR (QUOTE destpair)))
+	      ((isUU t) (SETQ ty (destprodtype ty))
+			(SETQ t1 (mkconst (QUOTE UU) (CAR ty)))
+			(SETQ t2 (mkconst (QUOTE UU) (CDR ty))))
+	      ((AND (iscomb t)
+		    (PROG2 (SETQ t2 (CDADR t))
+			   (iscomb (SETQ t (CAADR t))))
+		    (PROG2 (SETQ t1 (CDADR t))
+			   (EQ (CADR (CAADR t)) (QUOTE PAIR)))))
+	      ((ERR (QUOTE destpair))))
+	(RETURN (CONS t1 t2))))
+EXPR)
+
+(DEFPROP isUU
+ (LAMBDA (t) (EQ (CADR t) (QUOTE UU)))
+EXPR)
+
+(DEFPROP lhs
+ (LAMBDA(w)
+  (SELECTQ (CAR w) ((equiv inequiv) (CADR w)) (ERR (QUOTE lhs))))
+EXPR)
+
+(DEFPROP rhs
+ (LAMBDA(w)
+  (SELECTQ (CAR w) ((equiv inequiv) (CDDR w)) (ERR (QUOTE rhs))))
+EXPR)
+
+(DEFPROP mkfreethm
+ (LAMBDA (w) (CONS NIL w))
+EXPR)
+
+(DEFPROP eqtt
+ (LAMBDA (t) (mkequiv t (GET (QUOTE tt) (QUOTE MLVAL))))
+EXPR)
+
+(DEFPROP eqff
+ (LAMBDA (t) (mkequiv t (GET (QUOTE ff) (QUOTE MLVAL))))
+EXPR)
+
+(DEFPROP equu
+ (LAMBDA (t) (mkequiv t (GET (QUOTE uutr) (QUOTE MLVAL))))
+EXPR)
+% MLPRIN %
+
+(DEFPROP PP
+ (LAMBDA(%EX %PPDEPTH)
+  (COND	((ATOM %EX) (PRINC %EX))
+	(T (PPRINT %EX (LOOKUP (CAR %EX)) %PPDEPTH))))
+EXPR)
+
+(DEFPROP PPRINT
+ (LAMBDA(%EX F %PPDEPTH)
+  (PROG	(X)
+	(COND ((ZEROP %PPDEPTH) (RETURN (PRINC PPSYM))))
+   LOOP	(COND ((NULL F) (RETURN NIL)))
+	(SETQ X (CAR F))
+	(COND ((NUMBERP X) (PP (GETNTH X (CDR %EX)) (SUB1 %PPDEPTH)))
+	      ((ATOM X) (PRINC X))
+	      (T
+	       ((LAMBDA (%PP %PPL) (EVAL X))
+		(FUNCTION (LAMBDA (EX) (PP EX %PPDEPTH)))
+		(FUNCTION
+		 (LAMBDA(L OPEN SEP CLOSE)
+		  (PPL L %PPDEPTH OPEN SEP CLOSE))))))
+	(SETQ F (CDR F))
+	(GO LOOP)))
+EXPR)
+
+(DEFPROP PPL
+ (LAMBDA(L %PPDEPTH OPEN SEP CLOSE)
+  (PROG	(XL)
+	(SETQ XL L)
+	(PRINC OPEN)
+	(COND ((NULL XL) (GO END)))
+   LOOP	(PP (CAR XL) %PPDEPTH)
+	(SETQ XL (CDR XL))
+	(COND ((NULL XL) (GO END)) (T (PRINC SEP) (GO LOOP)))
+   END	(PRINC CLOSE)))
+EXPR)
+
+(DEFPROP LOOKUP
+
+ (LAMBDA(MKX)
+  (PROG	(PT)
+	(SETQ PT PRINTTABLE)
+   LOOP	(COND ((NULL PT) (SYSTEMERROR))
+	      ((EQ MKX (CAAR PT)) (RETURN (CDAR PT)))
+	      (T (SETQ PT (CDR PT)) (GO LOOP)))))
+EXPR)
+
+(DEFPROP GETNTH
+ (LAMBDA(N L)
+  (COND	((OR (ZEROP N) (NULL L)) (SYSTEMERROR))
+	((EQ N 1) (CAR L))
+	(T (GETNTH (SUB1 N) (CDR L)))))
+EXPR)
+
+(DEFPROP TESTTRAPFN
+ (LAMBDA(ISTEST F)
+  (PROG	(XL X)
+	(SETQ XL (CAR F))
+   L1	(COND
+	 ((NULL XL)
+	  (COND	((NULL (CDR F)) (RETURN NIL))
+		(T (SETQ X (CADR F)) (GO L2)))))
+	(SETQ X (CAR XL))
+	(PRINC
+	 (COND (ISTEST (QUOTE "if "))
+	       (T
+		(COND ((EQ (CAR X) (QUOTE ONCE)) TP3SYM)
+		      (T TP4SYM)))))
+	(PP (CADR X) %PPDEPTH)
+	(COND (ISTEST
+	       (PRINC
+		(COND ((EQ (CAR X) (QUOTE ONCE)) (QUOTE " then "))
+		      (T (QUOTE " loop ")))))
+	      (T (PRINC (QUOTE / ))))
+	(PP (CDDR X) %PPDEPTH)
+	(SETQ XL (CDR XL))
+	(GO L1)
+   L2	(COND (ISTEST
+	       (PRINC
+		(COND ((EQ (CAR X) (QUOTE ONCE)) (QUOTE " else "))
+		      (T (QUOTE " loop ")))))
+	      (T
+	       (COND ((ATOM (CAR X))
+		      (PRINC
+		       (COND ((EQ (CAR X) (QUOTE ONCE)) TP1SYM)
+			     (T TP2SYM))))
+		     (T	(PRINC
+			 (COND ((EQ (CAAR X) (QUOTE ONCE)) TP5SYM)
+			       (T TP6SYM)))
+			(PRINC (CDAR X))
+			(PRINC (QUOTE / ))))))
+	(PP (CDR X) %PPDEPTH)))
+EXPR)
+

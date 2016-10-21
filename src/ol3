@@ -1,0 +1,67 @@
+
+
+(DEFPROP eqtype
+ (LAMBDA (T1 T2) (EQ (CDDR T1) (CDDR T2)))
+EXPR)
+
+(DEFPROP genvar
+ (LAMBDA (TY) (mkvar (GENSYM) TY))
+EXPR)
+
+(DEFPROP equivpair
+ (LAMBDA (TH) (destequiv (CDR TH)))
+EXPR)
+
+(DEFPROP inequivpair
+ (LAMBDA (TH) (destinequiv (CDR TH)))
+EXPR)
+
+(DEFPROP tmfmvars
+ (LAMBDA (TMFM) (ALLVARS (CDR TMFM)))
+EXPR)
+
+(DEFPROP TYPESIN
+ (LAMBDA (%TYL OB) (%TYLIN1 OB))
+EXPR)
+
+(DEFPROP %TYLIN1
+ (LAMBDA(OB)
+  (OR (MEMQ OB %TYL)
+      (SELECTQ (CAR OB)
+	       ((vartype consttype truth) NIL)
+	       ((var const) (%TYLIN1 (CDDR OB)))
+	       ((comb abs) (%TYLIN2 (CADR OB)))
+	       ((quant conj
+		       imp
+		       equiv
+		       inequiv
+		       funtype
+		       prodtype
+		       sumtype)
+		(%TYLIN2 (CDR OB)))
+	       (ERROR (QUOTE TYPESIN)))))
+EXPR)
+
+(DEFPROP %TYLIN2
+ (LAMBDA (X) (OR (%TYLIN1 (CAR X)) (%TYLIN1 (CDR X))))
+EXPR)
+
+(DEFPROP TYVARS
+ (LAMBDA (OB) (PROG (%TYVL) (TYVARS1 OB) (RETURN (REVERSE %TYVL))))
+EXPR)
+
+(DEFPROP TYVARS1
+ (LAMBDA(OB)
+  (SELECTQ (CAR OB)
+	   ((truth consttype))
+	   (vartype (OR (MEMQ OB %TYVL) (SETQ %TYVL (CONS OB %TYVL))))
+	   ((var const) (TYVARS1 (CDDR OB)))
+	   ((comb abs) (TYVARS2 (CADR OB)))
+	   ((quant conj imp equiv inequiv funtype prodtype sumtype)
+	    (TYVARS2 (CDR OB)))
+	   (ERROR (QUOTE TYVARS))))
+EXPR)
+
+(DEFPROP TYVARS2
+ (LAMBDA (OB) (PROG2 (TYVARS1 (CAR OB)) (TYVARS1 (CDR OB))))
+EXPR)

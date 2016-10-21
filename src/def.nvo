@@ -1,0 +1,72 @@
+(TML)
+%for new system %
+"f:*->*";;
+"P:*->tr";;
+"h:*#*->*";;
+"g:*->*";;
+"e:*";;
+
+let th1 = ASSUME "F == FIX (\F':*->*.(\x:*. (P x) => (f x) |
+                 (h (x, F' (g x)))))";;
+let th2 = ASSUME "F1 == FIX (\F1':*->*->*.(\x:*. (\z:*. (P x) => 
+                 (h (z, f x)) |
+                 (F1' (g x) (h(z, x))))))";;
+ 
+let assoch = ASSUME "!a. !b. !c. h(a, h(b,c)) ==
+                    h(h(a,b), c)";;
+let stricth = ASSUME  "!a. h(a, UU:*) == UU";;
+let leftid = ASSUME "!a. h(e, a) == a";;
+
+let ss1 = itlist ssadd [assoch;stricth] BASICSS;;
+let ss2 = ssadd leftid BASICSS;;
+
+let goal1 = "!x.!z.(F1 x z) == h(z, (F x))",ss1,[]:form list;; 
+let goal2 = "!x.F1 x e == F x",ss2,[]:form list;; 
+
+
+%definitions needed for the new variable problem;
+ goal2 needs  result of using TAC1 on goal1 added to its
+ simpset%
+
+letrec destquantl (l, w) = isquant w => let c,d = destquant w
+                                      in destquantl ((c.l), d) |
+                                      (l,w);;
+
+% !xn ... ! x1. w          to    [x1; ... ;xn],w      %
+
+letrec ITSPEC l th = null l => th | ITSPEC (tl l) (SPEC (hd l) th);;
+
+%[xn'; ... ;x1'], |- !x1...!xn. P(x1...xn)    to   |- P(xn'...x1')  %
+
+letrec reverse l1 l2 = null l1 => l2 | reverse (tl l1) ((hd l1).l2);;
+
+let USEIHTAC ((w,ss,fml):goal) =
+   letref FML = fml
+   in ((let IH = ASSUME (hd FML)
+      in let boundvars,rest = destquantl (nil, (hd FML))
+         in let matchlist = fst (termmatch ([]:term list,
+                           []:type list) (lhs rest)(lhs w))
+            in let speclist = reverse
+                              ((map (fst o (\e. revassoc e matchlist)))
+                                   boundvars) nil
+               in let IH' = ITSPEC speclist IH
+                  in aconvform (w, (concl IH')) =>
+                     ([w, (ssadd IH ss), fml],
+                      hd) | fail)
+             ! FML := tl FML)
+             ? failwith `USEIHTAC`;;
+
+% takes a goal, finds the IH in the fml
+and adds that to the ss part of the goal.
+  The form in question must have form "!x1...xn. P == Q" or "P == Q". %
+
+let TAC1 = INDUCTAC [th2;th1] THEN SIMPTAC THEN REPEAT GENTAC
+           THEN ANYCASESTAC THEN SIMPTAC THEN USEIHTAC THEN SIMPTAC;;
+
+let TAC2 = SIMPTAC;;
+
+% tactics to perform the proof %
+
+
+
+
